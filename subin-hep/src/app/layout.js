@@ -11,9 +11,9 @@ export default function RootLayout({ children }) {
         {/* 상단바 (nav-bar) */}
         <nav className="sticky top-0 z-50 flex justify-between items-center px-[10%] py-6 bg-white/30 backdrop-blur-md">
           <Link href="/" className="text-2xl font-bold text-slate-800 tracking-tight">
-            Researcher's Lab
+            방구석 실험실
           </Link>
-          
+
           <ul className="flex gap-8">
             <li><Link href="/profile" className="font-medium text-slate-600 hover:text-blue-600 transition">Profile</Link></li>
             <li><Link href="/study" className="font-medium text-slate-600 hover:text-blue-600 transition">Study</Link></li>
