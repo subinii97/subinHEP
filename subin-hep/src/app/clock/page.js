@@ -144,7 +144,7 @@ const ALL_TIMEZONES = [
 
 export default function ClockPage() {
     // --- World Clock State ---
-    const [now, setNow] = useState(new Date());
+    const [now, setNow] = useState(null);
     const [selectedZone, setSelectedZone] = useState(null); // { label, zone }
     const [isZonePickerOpen, setIsZonePickerOpen] = useState(false);
     const [citySearch, setCitySearch] = useState("");
@@ -173,6 +173,7 @@ export default function ClockPage() {
 
     // World Clock Update (1s interval)
     useEffect(() => {
+        setNow(new Date());
         const interval = setInterval(() => {
             setNow(new Date());
         }, 1000);
@@ -323,7 +324,7 @@ export default function ClockPage() {
                                 {formatTime(now, "Asia/Seoul")}
                             </div>
                             <div className="text-white/40 text-sm">
-                                {now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+                                {now ? now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }) : "--"}
                             </div>
                         </div>
 
@@ -349,7 +350,7 @@ export default function ClockPage() {
                                         {formatTime(now, selectedZone.zone)}
                                     </div>
                                     <div className="text-white/40 text-sm">
-                                        {new Date().toLocaleDateString("en-US", { timeZone: selectedZone.zone, weekday: 'long', month: 'long', day: 'numeric' })}
+                                        {now ? now.toLocaleDateString("en-US", { timeZone: selectedZone.zone, weekday: 'long', month: 'long', day: 'numeric' }) : "--"}
                                     </div>
                                 </>
                             ) : (
