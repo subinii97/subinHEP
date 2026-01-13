@@ -13,7 +13,7 @@ export default function RootLayout({ children }) {
         {/* 움직이는 그라데이션 배경 */}
         <div className="fixed inset-0 -z-10 bg-gradient-to-r from-[#355C7D] via-[#6C5B7B] to-[#C06C84] animate-gradient"></div>
 
-        <nav className="sticky top-0 z-50 px-[5%] py-4 md:py-6 bg-[#6b7887] shadow-lg transition-all">
+        <nav className="sticky top-0 z-50 px-[5%] py-4 md:py-6 bg-[#718eac] shadow-lg transition-all">
           <div className="max-w-[1400px] mx-auto flex justify-between items-center">
             {/* 로고: 모바일에서는 조금 더 작게 (text-2xl -> text-3xl) */}
             <Link href="/" className="text-2xl md:text-3xl font-extrabold tracking-tighter text-[#FFF2E0] hover:scale-105 transition-transform duration-300">
@@ -26,7 +26,7 @@ export default function RootLayout({ children }) {
                 <li key={item}>
                   <Link href={`/${item.toLowerCase()}`} className="group relative py-1">
                     {item}
-                    <span className="absolute left-0 bottom-[-4px] w-0 h-1 bg-[#FFF2E0] transition-all duration-300 group-hover:w-full"></span>
+                    <span className="absolute left-0 bottom-[-4px] w-0 h-1 bg-[#bca5ae] transition-all duration-300 group-hover:w-full"></span>
                   </Link>
                 </li>
               ))}

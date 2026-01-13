@@ -80,7 +80,7 @@ export default function AnonymousBoard() {
         <h1 className="text-xl md:text-3xl font-bold text-[#FFF2E0]">Community</h1>
         <button
           onClick={() => setIsWriting(true)}
-          className="px-4 py-2 md:px-8 md:py-3 bg-[#898AC4] text-[#FFF2E0] font-bold rounded-full hover:scale-105 transition-all shadow-lg text-xs md:text-base"
+          className="px-4 py-2 md:px-8 md:py-3 bg-[#718eac] text-[#FFF2E0] font-bold rounded-full hover:scale-105 hover:bg-[#53718d] transition-all shadow-lg text-xs md:text-base"
         >
           글쓰기
         </button>
@@ -174,7 +174,7 @@ export default function AnonymousBoard() {
                     <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-sm md:text-base">{showPassword ? "🙈" : "👁️"}</button>
                   </div>
                 )}
-                <button className="px-6 md:px-10 py-3 bg-[#898AC4] text-[#FFF2E0] font-bold rounded-xl hover:bg-[#7677A0] transition text-sm md:text-base">등록</button>
+                <button className="px-6 md:px-10 py-3 bg-[#718eac] text-[#FFF2E0] font-bold rounded-xl hover:bg-[#53718d] transition text-sm md:text-base">등록</button>
               </div>
             </form>
           </div>
