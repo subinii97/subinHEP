@@ -11,7 +11,7 @@ export default function Navbar() {
     const lastScrollY = useRef(0);
     const timeoutRef = useRef(null);
 
-    const menuItems = ["Profile", "Study", "Fun", "Refresh"];
+    const menuItems = ["Profile", "Study", "Fun", "Refresh", "Clock"];
     const isRefreshPage = pathname === "/refresh";
 
     // 2초 후 자동 숨김 타이머 재설정 함수
@@ -19,7 +19,8 @@ export default function Navbar() {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
         // 페이지 최상단(scrollY < 10)일 때는 타이머를 작동시키지 않음 (항상 표시)
-        if (window.scrollY < 10) return;
+        // 단, Refresh 페이지는 최상단에서도 사라지도록 예외 처리
+        if (window.scrollY < 10 && !isRefreshPage) return;
 
         timeoutRef.current = setTimeout(() => {
             // 모바일 메뉴가 열려있을 때는 숨기지 않음
@@ -33,8 +34,8 @@ export default function Navbar() {
         const handleScroll = () => {
             const currentScrollY = window.scrollY;
 
-            // 페이지 최상단에 있을 때는 항상 보임
-            if (currentScrollY < 10) {
+            // 페이지 최상단에 있을 때 (Refresh 페이지 제외)
+            if (currentScrollY < 10 && !isRefreshPage) {
                 setIsVisible(true);
                 if (timeoutRef.current) clearTimeout(timeoutRef.current);
                 lastScrollY.current = currentScrollY;
@@ -71,9 +72,12 @@ export default function Navbar() {
             if (e.clientY < 100) handleInteraction();
         });
 
-        // 초기 타이머 설정
-        if (window.scrollY >= 10) {
+        // 초기 타이머 설정: Refresh 페이지거나 이미 스크롤이 내려가 있는 경우에만 작동
+        if (window.scrollY >= 10 || isRefreshPage) {
             resetAutoHideTimer();
+        } else {
+            setIsVisible(true);
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
         }
 
         return () => {
@@ -82,7 +86,7 @@ export default function Navbar() {
             window.removeEventListener("touchmove", handleInteraction);
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
         };
-    }, [isMenuOpen]);
+    }, [isMenuOpen, isRefreshPage]); // isRefreshPage가 바뀔 때마다 리스너 갱신
 
     return (
         <>
@@ -100,7 +104,7 @@ export default function Navbar() {
                     </Link>
 
                     {/* Desktop Menu */}
-                    <ul className="hidden md:flex gap-10 text-xl font-medium text-white">
+                    <ul className="hidden lg:flex gap-10 text-xl font-medium text-white">
                         {menuItems.map((item) => (
                             <li key={item}>
                                 <Link href={`/${item.toLowerCase()}`} className="group relative py-1">
@@ -115,7 +119,7 @@ export default function Navbar() {
                     {/* Hamburger Button */}
                     <button
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        className="md:hidden flex flex-col gap-1.5 p-2"
+                        className="lg:hidden flex flex-col gap-1.5 p-2"
                         aria-label="Toggle Menu"
                     >
                         <div className={`w-7 h-0.5 bg-white transition-all ${isMenuOpen ? "rotate-45 translate-y-2" : ""}`}></div>
@@ -125,7 +129,7 @@ export default function Navbar() {
                 </div>
 
                 {/* Mobile Dropdown Menu */}
-                <div className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMenuOpen ? "max-h-64 opacity-100 mt-4" : "max-h-0 opacity-0"}`}>
+                <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMenuOpen ? "max-h-64 opacity-100 mt-4" : "max-h-0 opacity-0"}`}>
                     <ul className="flex flex-col gap-4 pb-4 text-center text-lg font-medium text-white">
                         {menuItems.map((item) => (
                             <li key={item} onClick={() => setIsMenuOpen(false)}>
