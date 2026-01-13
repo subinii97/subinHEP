@@ -13,6 +13,7 @@ export default function AnonymousBoard() {
   const [content, setContent] = useState("");
   const [password, setPassword] = useState("");
   const [editingId, setEditingId] = useState(null);
+  const [showPassword, setShowPassword] = useState(false); // 1. 비밀번호 보이기 상태 추가
 
   const fetchPosts = async () => {
     const { data } = await supabase
@@ -32,12 +33,32 @@ export default function AnonymousBoard() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // 1. 비밀번호 유효성 검사 (영어+숫자 정규표현식)
+    // ^[A-Za-z0-9]+$ : 시작부터 끝까지 영문 대소문자와 숫자로만 구성됨을 의미
+    const passwordRegex = /^[A-Za-z0-9]+$/;
+
+    if (!editingId && !passwordRegex.test(password)) {
+      alert("비밀번호는 영문자와 숫자만 사용하여 설정해 주세요.");
+      return;
+    }
+
     if (editingId) {
-      await supabase.from("anonymous_board").update({ title, content }).eq("id", editingId);
+      // 수정 로직
+      const { error } = await supabase
+        .from("anonymous_board")
+        .update({ title, content })
+        .eq("id", editingId);
+      if (error) alert(error.message);
       setEditingId(null);
     } else {
-      await supabase.from("anonymous_board").insert([{ title, content, password }]);
+      // 새 글 등록
+      const { error } = await supabase
+        .from("anonymous_board")
+        .insert([{ title, content, password }]);
+      if (error) alert(error.message);
     }
+
     setTitle(""); setContent(""); setPassword("");
     setIsWriting(false);
     fetchPosts();
@@ -119,7 +140,12 @@ export default function AnonymousBoard() {
       {isWriting && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-md p-4 animate-in fade-in duration-300">
           <div className="bg-[#6b7887] p-8 rounded-[2.5rem] shadow-2xl w-full max-w-xl border border-white/10 animate-in zoom-in-95 duration-300">
-            <h2 className="text-2xl font-bold mb-6 text-[#FFF2E0]">{editingId ? "Edit Post" : "New Post"}</h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-[#FFF2E0]">{editingId ? "Edit Post" : "New Post"}</h2>
+              {/* 닫기 버튼 추가 */}
+              <button onClick={() => { setIsWriting(false); setEditingId(null); setShowPassword(false); }} className="text-[#FFF2E0]/60 hover:text-white">✕</button>
+            </div>
+
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <input
                 type="text" placeholder="제목" value={title}
@@ -131,23 +157,32 @@ export default function AnonymousBoard() {
                 onChange={(e) => setContent(e.target.value)}
                 className="p-4 h-64 rounded-2xl bg-white/10 border border-white/10 outline-none text-[#FFF2E0] placeholder:text-[#FFF2E0]/40 resize-none" required
               />
-              {!editingId && (
-                <input
-                  type="password" placeholder="비밀번호" value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="p-4 rounded-2xl bg-white/10 border border-white/10 outline-none text-[#FFF2E0] placeholder:text-[#FFF2E0]/40" required
-                />
-              )}
-              <div className="flex gap-3 mt-4">
-                <button
-                  type="button"
-                  onClick={() => { setIsWriting(false); setEditingId(null); }}
-                  className="flex-1 py-4 text-[#FFF2E0]/60 font-bold hover:text-[#FFF2E0] transition"
-                >
-                  취소
-                </button>
-                <button className="flex-1 py-4 bg-[#898AC4] text-[#FFF2E0] font-bold rounded-2xl hover:bg-[#7677A0] transition shadow-lg">
-                  {editingId ? "수정하기" : "등록하기"}
+
+              <div className="flex gap-4">
+                {!editingId && (
+                  <div className="relative flex-1 group">
+                    <input
+                      type={showPassword ? "text" : "password"} // 2. 상태에 따라 타입 변경
+                      placeholder="비밀번호 (영문/숫자)"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      pattern="[A-Za-z0-9]+"
+                      title="영문자와 숫자만 입력 가능합니다."
+                      className="w-full p-4 rounded-2xl bg-white/10 border border-white/10 outline-none text-[#FFF2E0] placeholder:text-[#FFF2E0]/40 pr-12"
+                      required
+                    />
+                    {/* 3. 눈 아이콘 버튼 추가 */}
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-xl"
+                    >
+                      {showPassword ? "🙈" : "👁️"}
+                    </button>
+                  </div>
+                )}
+                <button className="px-10 py-3 bg-[#898AC4] text-[#FFF2E0] font-bold rounded-xl hover:bg-[#7677A0] transition shadow-lg shrink-0">
+                  {editingId ? "수정 완료" : "등록하기"}
                 </button>
               </div>
             </form>
