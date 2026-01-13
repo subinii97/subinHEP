@@ -5,7 +5,7 @@ export default function Home() {
         <h1 className="text-5xl font-extrabold text-slate-800 mb-6 tracking-tight">
           Hello. Nice to meet you.
         </h1>
-        <p className="text-xl text-slate-600 max-w-2xl leading-relaxed">
+        <p className="text-xl text-slate-400 max-w-2xl leading-relaxed">
           Explore the world through experiments and data, <br />
           and understand the fundamental physics around us.
         </p>

@@ -2,71 +2,44 @@
 
 import "./globals.css";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 
 export default function RootLayout({ children }) {
-  const [user, setUser] = useState(null);
-
-  // 현재 로그인한 사용자 정보 가져오기
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-    };
-    getUser();
-
-    // 로그인 상태 변화 감지 (로그인/로그아웃 시 자동 반영)
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => authListener.subscription.unsubscribe();
-  }, []);
-
-  const handleLogin = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin }
-    });
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-  };
-
   return (
     <html lang="ko">
-      <body className="relative">
-        <div className="fixed inset-0 -z-10 bg-gradient-to-br from-[#f5f7fa] to-[#c3cfe2] opacity-60"></div>
+      <body className="relative text-slate-800">
+        {/* 요청하신 색상으로 움직이는 그라데이션 배경 */}
+        <div className="fixed inset-0 -z-10 bg-gradient-to-r from-[#355C7D] via-[#6C5B7B] to-[#C06C84] animate-gradient"></div>
 
-        <nav className="sticky top-0 z-50 flex justify-between items-center px-[8%] py-6 bg-white/30 backdrop-blur-md border-b border-white/20">
-          <Link href="/" className="text-3xl font-extrabold text-slate-900 tracking-tighter">
-            Researcher's Lab
+        <nav className="sticky top-0 z-50 flex justify-between items-center px-[8%] py-6 bg-[#6b7887] shadow-lg">
+          <Link href="/" className="text-3xl font-extrabold tracking-tighter text-[#FFF2E0] hover:scale-105 transition-transform duration-300">
+            Study Lab.
           </Link>
 
           <div className="flex items-center gap-12">
-            <ul className="flex gap-10 text-xl font-semibold text-slate-700">
-              <li><Link href="/profile">Profile</Link></li>
-              <li><Link href="/study">Study</Link></li>
-              <li><Link href="/fun">Fun</Link></li>
+            <ul className="flex gap-10 text-xl font-medium text-[#FFF2E0]">
+              <li>
+                <Link href="/profile" className="group relative py-1">
+                  Profile
+                  <span className="absolute left-0 bottom-[-4px] w-0 h-1 bg-[#FFF2E0] transition-all duration-300 group-hover:w-full"></span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/study" className="group relative py-1">
+                  Study
+                  <span className="absolute left-0 bottom-[-4px] w-0 h-1 bg-[#FFF2E0] transition-all duration-300 group-hover:w-full"></span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/fun" className="group relative py-1">
+                  Fun
+                  <span className="absolute left-0 bottom-[-4px] w-0 h-1 bg-[#FFF2E0] transition-all duration-300 group-hover:w-full"></span>
+                </Link>
+              </li>
             </ul>
-
-            {/* 로그인 상태에 따라 버튼 변경 */}
-            {user ? (
-              <div className="flex items-center gap-4">
-                <span className="text-slate-600 font-medium">{user.email.split('@')[0]}님</span>
-                <button onClick={handleLogout} className="px-6 py-2.5 bg-red-500 text-white font-bold rounded-full text-lg">
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <button onClick={handleLogin} className="px-6 py-2.5 bg-slate-800 text-white font-bold rounded-full text-lg">
-                Login
-              </button>
-            )}
+            {/* 로그인 버튼이 삭제되었습니다 */}
           </div>
         </nav>
+
         {children}
       </body>
     </html>

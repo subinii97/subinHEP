@@ -24,3 +24,23 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@keyframes gradient-move {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  /* 색상이 부드럽게 이어지도록 배경 크기를 충분히 크게 잡습니다 */
+  background-size: 300% 300%;
+  animation: gradient-move 15s ease infinite;
+}
