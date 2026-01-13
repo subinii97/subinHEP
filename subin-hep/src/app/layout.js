@@ -26,7 +26,7 @@ export default function RootLayout({ children }) {
                 <li key={item}>
                   <Link href={`/${item.toLowerCase()}`} className="group relative py-1">
                     {item}
-                    <span className="absolute left-0 bottom-[-4px] w-0 h-1 bg-[#bca5ae] transition-all duration-300 group-hover:w-full"></span>
+                    <span className="absolute left-0 bottom-[-4px] w-0 h-1 bg-[#365470] transition-all duration-300 group-hover:w-full"></span>
                   </Link>
                 </li>
               ))}
