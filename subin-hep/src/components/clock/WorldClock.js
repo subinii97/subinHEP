@@ -19,6 +19,31 @@ export default function WorldClock() {
         return () => clearInterval(interval);
     }, []);
 
+    // Load persisted zone on mount
+    useEffect(() => {
+        const saved = localStorage.getItem("world-clock-zone");
+        if (saved) {
+            try {
+                const zone = JSON.parse(saved);
+                // Basic validation: must have label and zone fields
+                if (zone && zone.label && zone.zone) {
+                    setSelectedZone(zone);
+                }
+            } catch (e) {
+                console.error("Failed to parse saved zone", e);
+            }
+        }
+    }, []);
+
+    // Save zone to localStorage
+    useEffect(() => {
+        if (selectedZone) {
+            localStorage.setItem("world-clock-zone", JSON.stringify(selectedZone));
+        } else {
+            localStorage.removeItem("world-clock-zone");
+        }
+    }, [selectedZone]);
+
     // Filter timezones
     const filteredTimezones = useMemo(() => {
         const query = (citySearch || "").trim().toLowerCase();
