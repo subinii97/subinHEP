@@ -54,8 +54,8 @@ export default function Navbar() {
                 </div>
 
                 {/* Mobile Dropdown Menu */}
-                <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMenuOpen ? "max-h-64 opacity-100 mt-4" : "max-h-0 opacity-0"}`}>
-                    <ul className="flex flex-col gap-4 pb-4 text-center text-lg font-medium text-white">
+                <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMenuOpen ? "max-h-[calc(100vh-100px)] opacity-100 mt-4 overflow-y-auto" : "max-h-0 opacity-0"}`}>
+                    <ul className="flex flex-col gap-4 pb-8 text-center text-lg font-medium text-white">
                         {MENU_ITEMS.map((item) => (
                             <li key={item} onClick={() => setIsMenuOpen(false)}>
                                 <Link href={`/${item.toLowerCase()}`} className="block py-2 hover:bg-white/10 rounded-xl">

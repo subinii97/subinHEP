@@ -53,26 +53,33 @@ export default function StudyPostPage({ params: paramsPromise }) {
 
             <article className="bg-white/10 backdrop-blur-md rounded-[2rem] md:rounded-[3rem] p-6 md:p-12 border border-white/20">
                 <header className="mb-8 md:mb-12 border-b border-white/10 pb-8 md:pb-12 text-center">
-                    <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">
+                    <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6 tracking-tight">
                         {post.title}
                     </h2>
-                    <time className="text-sm md:text-lg text-white/50 font-medium">
-                        {new Date(post.created_at).toLocaleDateString([], {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                        })}
-                    </time>
+                    <div className="flex flex-col items-center gap-2">
+                        <time className="text-sm md:text-lg text-white font-medium">
+                            {new Date(post.created_at).toLocaleDateString([], {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                            })}
+                        </time>
+                        <div className="flex items-center gap-4 text-xs md:text-sm text-white/80">
+                            <span>Updated on: {post.updated_at}</span>
+                            <span className="w-1 h-1 bg-white/40 rounded-full"></span>
+                            <span>Views: {post.views}</span>
+                        </div>
+                    </div>
                 </header>
 
                 <div className="prose prose-invert prose-slate max-w-none 
           prose-headings:text-white prose-headings:font-bold
-          prose-p:text-white/80 prose-p:leading-relaxed prose-p:text-lg
+          prose-p:text-white prose-p:leading-relaxed prose-p:text-lg
           prose-strong:text-white prose-strong:font-bold
-          prose-ul:text-white/80 prose-li:text-white/80
+          prose-ul:text-white prose-li:text-white
           prose-code:text-[#4ADE80] prose-code:bg-[#4ADE80]/10 prose-code:px-2 prose-code:py-0.5 prose-code:rounded-md prose-code:font-semibold prose-code:before:content-none prose-code:after:content-none
           prose-pre:bg-black/40 prose-pre:border prose-pre:border-white/10 prose-pre:rounded-2xl
-          prose-blockquote:border-l-4 prose-blockquote:border-[#718eac] prose-blockquote:bg-white/5 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:rounded-r-xl prose-blockquote:italic prose-blockquote:text-white/70
+          prose-blockquote:border-l-4 prose-blockquote:border-[#718eac] prose-blockquote:bg-white/5 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:rounded-r-xl prose-blockquote:italic prose-blockquote:text-white
           prose-img:rounded-3xl prose-img:border prose-img:border-white/10
           prose-a:text-[#718eac] prose-a:no-underline hover:prose-a:underline
         ">

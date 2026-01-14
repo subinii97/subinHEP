@@ -1,1 +1,1 @@
-export const MENU_ITEMS = ["Profile", "Study", "Fun", "Refresh", "Clock"];
+export const MENU_ITEMS = ["Profile", "Study", "Community", "Refresh", "Clock"];

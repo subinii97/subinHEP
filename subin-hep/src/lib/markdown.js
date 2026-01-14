@@ -1,8 +1,35 @@
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
+import { execSync } from 'child_process';
 
 const contentDirectory = path.join(process.cwd(), 'src/content/study');
+
+function getGitUpdateTime(filePath) {
+    try {
+        const stats = fs.statSync(filePath);
+        // If the file is not tracked by git or git is not available, use mtime as fallback
+        const gitTime = execSync(`git log -1 --format=%ai -- "${filePath}"`, { encoding: 'utf8' }).trim();
+        if (gitTime) {
+            const date = new Date(gitTime);
+            return date.toISOString();
+        }
+        return stats.mtime.toISOString();
+    } catch (error) {
+        console.error(`Failed to get git update time for ${filePath}:`, error);
+        return new Date().toISOString();
+    }
+}
+
+function formatUpdateTime(isoString) {
+    const date = new Date(isoString);
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const hh = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+}
 
 export function getAllStudyPosts() {
     if (!fs.existsSync(contentDirectory)) {
@@ -18,6 +45,7 @@ export function getAllStudyPosts() {
             const fullPath = path.join(contentDirectory, fileName);
             const fileContents = fs.readFileSync(fullPath, 'utf8');
             const { data, content } = matter(fileContents);
+            const updatedAtIso = getGitUpdateTime(fullPath);
 
             return {
                 slug,
@@ -25,6 +53,7 @@ export function getAllStudyPosts() {
                 content,
                 // Ensure date is a string for serialization
                 created_at: data.date ? new Date(data.date).toISOString() : new Date().toISOString(),
+                updated_at: formatUpdateTime(updatedAtIso),
             };
         });
 
@@ -38,11 +67,13 @@ export function getStudyPostBySlug(slug) {
 
     const fileContents = fs.readFileSync(fullPath, 'utf8');
     const { data, content } = matter(fileContents);
+    const updatedAtIso = getGitUpdateTime(fullPath);
 
     return {
         slug,
         ...data,
         content,
         created_at: data.date ? new Date(data.date).toISOString() : new Date().toISOString(),
+        updated_at: formatUpdateTime(updatedAtIso),
     };
 }

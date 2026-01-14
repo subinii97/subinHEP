@@ -4,6 +4,34 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Button from "@/components/common/Button";
 
+// 아이콘 컴포넌트
+const GridIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="7" height="7"></rect>
+    <rect x="14" y="3" width="7" height="7"></rect>
+    <rect x="14" y="14" width="7" height="7"></rect>
+    <rect x="3" y="14" width="7" height="7"></rect>
+  </svg>
+);
+
+const CardIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+    <line x1="3" y1="12" x2="21" y2="12"></line>
+  </svg>
+);
+
+const ListIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="8" y1="6" x2="21" y2="6"></line>
+    <line x1="8" y1="12" x2="21" y2="12"></line>
+    <line x1="8" y1="18" x2="21" y2="18"></line>
+    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+  </svg>
+);
+
 // 마크다운 문법을 제거하고 순수 텍스트만 추출하는 간단한 함수
 function stripMarkdown(text) {
   if (!text) return "";
@@ -27,16 +55,16 @@ function GridItem({ post }) {
       className="group relative p-4 md:p-6 bg-white/10 backdrop-blur-sm rounded-[1.5rem] md:rounded-[2rem] border border-white/20 hover:bg-white/20 transition-all cursor-pointer h-40 md:h-64 flex flex-col justify-between"
     >
       <div className="overflow-hidden">
-        <h3 className="text-sm md:text-xl font-bold text-[#FFF2E0] mb-1 truncate">{post.title}</h3>
-        <span className="text-xs md:text-sm text-[#FFF2E0]/60 block mb-3 font-medium">
+        <h3 className="text-sm md:text-xl font-bold text-white mb-1 truncate">{post.title}</h3>
+        <span className="text-xs md:text-sm text-white/70 block mb-3 font-medium">
           {new Date(post.created_at).toLocaleString([], { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
         </span>
-        <p className="text-[#FFF2E0]/80 line-clamp-2 md:line-clamp-3 text-xs md:text-base leading-relaxed">
+        <p className="text-white/80 line-clamp-2 md:line-clamp-3 text-xs md:text-base leading-relaxed">
           {plainText}
         </p>
       </div>
       <div className="flex justify-end mt-2">
-        <span className="text-[#FFF2E0]/40 text-[10px] group-hover:text-white transition-colors">Read More →</span>
+        <span className="text-white/70 text-[10px] group-hover:text-white transition-colors">Read More →</span>
       </div>
     </Link>
   );
@@ -48,19 +76,17 @@ function CardItem({ post }) {
   return (
     <Link
       href={`/study/${post.slug}`}
-      className="group p-5 md:p-8 bg-white/10 backdrop-blur-sm rounded-3xl border border-white/20 hover:bg-white/15 transition-all cursor-pointer flex flex-col gap-3"
+      className="group p-4 md:p-6 bg-white/10 backdrop-blur-sm rounded-3xl border border-white/20 hover:bg-white/15 transition-all cursor-pointer flex flex-col gap-2"
     >
-      <div className="flex justify-between items-start">
-        <h1 className="text-lg md:text-2xl font-bold text-[#FFF2E0] group-hover:text-white transition-colors">{post.title}</h1>
-        <span className="text-xs md:text-sm text-[#FFF2E0]/50 whitespace-nowrap pt-1">
-          {new Date(post.created_at).toLocaleString([], { year: 'numeric', month: '2-digit', day: '2-digit' })}
-        </span>
-      </div>
-      <p className="text-[#FFF2E0]/70 line-clamp-2 text-sm md:text-base leading-relaxed">
+      <h1 className="text-lg md:text-2xl font-bold text-white group-hover:text-white transition-colors">{post.title}</h1>
+      <p className="text-white/80 line-clamp-2 text-sm md:text-base leading-relaxed">
         {plainText}
       </p>
-      <div className="flex justify-end mt-2">
-        <span className="text-[#FFF2E0]/40 text-xs group-hover:text-white transition-colors">Read More →</span>
+      <div className="flex justify-between items-center">
+        <span className="text-[11px] md:text-xs text-white/70">
+          {new Date(post.created_at).toLocaleString([], { year: 'numeric', month: '2-digit', day: '2-digit' })}
+        </span>
+        <span className="text-white/70 text-[10px] md:text-xs group-hover:text-white transition-colors">Read More →</span>
       </div>
     </Link>
   );
@@ -73,12 +99,11 @@ function ListItem({ post }) {
       href={`/study/${post.slug}`}
       className="group px-4 py-3 md:px-6 md:py-4 bg-white/5 hover:bg-white/10 border-b border-white/5 first:rounded-t-2xl last:rounded-b-2xl last:border-none transition-all cursor-pointer flex justify-between items-center gap-4"
     >
-      <h3 className="text-sm md:text-base font-bold text-[#FFF2E0] truncate flex-1 group-hover:text-white transition-colors">{post.title}</h3>
+      <h3 className="text-sm md:text-base font-bold text-white truncate flex-1 group-hover:text-white transition-colors">{post.title}</h3>
       <div className="flex items-center gap-6">
-        <span className="text-[10px] md:text-sm text-[#FFF2E0]/40 font-mono">
+        <span className="text-[10px] md:text-sm text-white/70 font-mono">
           {new Date(post.created_at).toLocaleDateString()}
         </span>
-        <span className="text-[#FFF2E0]/20 text-xs group-hover:text-white/60">→</span>
       </div>
     </Link>
   );
@@ -88,6 +113,13 @@ export default function StudyPage() {
   const [viewMode, setViewMode] = useState("grid"); // 'grid' | 'card' | 'list'
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // 모바일인 경우 기본 뷰를 'card'로 설정 (md: 768px 미만)
+    if (window.innerWidth < 768) {
+      setViewMode("card");
+    }
+  }, []);
 
   useEffect(() => {
     // API Route를 통해 마크다운 파일 목록을 가져옴
@@ -115,17 +147,17 @@ export default function StudyPage() {
           {/* 뷰 모드 스위처 */}
           <div className="flex bg-white/10 p-1 rounded-xl border border-white/10">
             {[
-              { id: 'grid', label: 'Grid', icon: '◫' },
-              { id: 'card', label: 'Card', icon: '☰' },
-              { id: 'list', label: 'List', icon: '≡' }
+              { id: 'grid', icon: <GridIcon /> },
+              { id: 'card', icon: <CardIcon /> },
+              { id: 'list', icon: <ListIcon /> }
             ].map(mode => (
               <button
                 key={mode.id}
                 onClick={() => setViewMode(mode.id)}
-                className={`px-3 py-1.5 rounded-lg text-sm transition-all flex items-center gap-1.5 ${viewMode === mode.id ? 'bg-[#718eac] text-white' : 'text-white/50 hover:text-white'}`}
+                className={`px-3 py-1.5 rounded-lg transition-all flex items-center justify-center ${viewMode === mode.id ? 'bg-[#718eac] text-white' : 'text-white/50 hover:text-white'} ${mode.id === 'grid' ? 'hidden md:flex' : 'flex'}`}
+                title={mode.id.toUpperCase()}
               >
-                <span>{mode.icon}</span>
-                <span className="hidden sm:inline">{mode.label}</span>
+                {mode.icon}
               </button>
             ))}
           </div>
@@ -138,7 +170,7 @@ export default function StudyPage() {
       ) : posts.length > 0 ? (
         <>
           {viewMode === 'grid' && (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
               {posts.map(post => (
                 <GridItem key={post.slug} post={post} />
               ))}
