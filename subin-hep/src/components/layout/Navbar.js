@@ -28,20 +28,80 @@ export default function Navbar() {
                         Study Lab.
                     </Link>
 
-                    {/* Desktop Menu */}
-                    <ul className="hidden lg:flex gap-10 text-xl font-medium text-white">
-                        {MENU_ITEMS.map((item) => (
-                            <li key={item}>
-                                <Link href={`/${item.toLowerCase()}`} className="group relative py-1">
-                                    {item}
-                                    <span className={`absolute left-0 bottom-[-4px] w-0 h-1 transition-all duration-300 group-hover:w-full ${isRefreshPage ? "bg-white/40" : "bg-[#365470]"
-                                        }`}></span>
+                    {/* Desktop Menu - Smart Responsive */}
+                    <div className="hidden lg:flex items-center gap-6 xl:gap-8 relative">
+                        <ul className="flex items-center gap-4 xl:gap-8 text-lg xl:text-xl font-medium text-white">
+                            <li className="hidden lg:block">
+                                <Link href="/profile" className="group relative py-1">
+                                    Profile
+                                    <span className="absolute left-0 bottom-[-4px] w-0 h-1 bg-white/40 transition-all duration-300 group-hover:w-full"></span>
                                 </Link>
                             </li>
-                        ))}
-                    </ul>
+                            <li className="hidden min-[1100px]:block">
+                                <Link href="/study" className="group relative py-1">
+                                    Study
+                                    <span className="absolute left-0 bottom-[-4px] w-0 h-1 bg-white/40 transition-all duration-300 group-hover:w-full"></span>
+                                </Link>
+                            </li>
+                            <li className="hidden min-[1200px]:block">
+                                <Link href="/community" className="group relative py-1">
+                                    Community
+                                    <span className="absolute left-0 bottom-[-4px] w-0 h-1 bg-white/40 transition-all duration-300 group-hover:w-full"></span>
+                                </Link>
+                            </li>
+                            <li className="hidden min-[1350px]:block">
+                                <Link href="/clock" className="group relative py-1">
+                                    Clock
+                                    <span className="absolute left-0 bottom-[-4px] w-0 h-1 bg-white/40 transition-all duration-300 group-hover:w-full"></span>
+                                </Link>
+                            </li>
+                            <li className="hidden min-[1500px]:block">
+                                <Link href="/refresh" className="group relative py-1">
+                                    Refresh
+                                    <span className="absolute left-0 bottom-[-4px] w-0 h-1 bg-white/40 transition-all duration-300 group-hover:w-full"></span>
+                                </Link>
+                            </li>
+                        </ul>
 
-                    {/* Hamburger Button */}
+                        {/* Hamburger Button */}
+                        <button
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            className="flex flex-col gap-1.5 p-2 hover:opacity-80 transition-opacity"
+                            aria-label="Toggle Menu"
+                        >
+                            <div className={`w-8 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? "rotate-45 translate-y-2" : ""}`}></div>
+                            <div className={`w-8 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? "opacity-0" : ""}`}></div>
+                            <div className={`w-8 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? "-rotate-45 -translate-y-2" : ""}`}></div>
+                        </button>
+
+                        {/* Desktop Dropdown (Right-aligned Popup) */}
+                        <div className={`absolute top-full right-0 mt-4 w-64 bg-white/10 backdrop-blur-xl rounded-[2rem] border border-white/20 shadow-2xl overflow-hidden transition-all duration-500 ease-in-out ${isMenuOpen ? "max-h-96 opacity-100 translate-y-0" : "max-h-0 opacity-0 -translate-y-4 pointer-events-none"}`}>
+                            <ul className="flex flex-col p-4 text-center text-lg font-medium text-white">
+                                <li className="block min-[1500px]:hidden" onClick={() => setIsMenuOpen(false)}>
+                                    <Link href="/refresh" className="block py-3 hover:bg-white/10 rounded-2xl transition-all">Refresh</Link>
+                                </li>
+                                <li className="block min-[1350px]:hidden" onClick={() => setIsMenuOpen(false)}>
+                                    <Link href="/clock" className="block py-3 hover:bg-white/10 rounded-2xl transition-all">Clock</Link>
+                                </li>
+                                <li className="block min-[1200px]:hidden" onClick={() => setIsMenuOpen(false)}>
+                                    <Link href="/community" className="block py-3 hover:bg-white/10 rounded-2xl transition-all">Community</Link>
+                                </li>
+                                <li className="block min-[1100px]:hidden" onClick={() => setIsMenuOpen(false)}>
+                                    <Link href="/study" className="block py-3 hover:bg-white/10 rounded-2xl transition-all">Study</Link>
+                                </li>
+                                <li className="block lg:hidden" onClick={() => setIsMenuOpen(false)}>
+                                    <Link href="/profile" className="block py-3 hover:bg-white/10 rounded-2xl transition-all">Profile</Link>
+                                </li>
+                                <li onClick={() => setIsMenuOpen(false)}>
+                                    <Link href="/internal" className="block py-3 hover:bg-white/10 rounded-2xl transition-all font-bold text-[#E6E6FA]">
+                                        Internal
+                                    </Link>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    {/* Mobile Hamburger Button */}
                     <button
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
                         className="lg:hidden flex flex-col gap-1.5 p-2"
@@ -53,17 +113,20 @@ export default function Navbar() {
                     </button>
                 </div>
 
-                {/* Mobile Dropdown Menu */}
-                <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMenuOpen ? "max-h-[calc(100vh-100px)] opacity-100 mt-4 overflow-y-auto" : "max-h-0 opacity-0"}`}>
-                    <ul className="flex flex-col gap-4 pb-8 text-center text-lg font-medium text-white">
-                        {MENU_ITEMS.map((item) => (
-                            <li key={item} onClick={() => setIsMenuOpen(false)}>
-                                <Link href={`/${item.toLowerCase()}`} className="block py-2 hover:bg-white/10 rounded-xl">
-                                    {item}
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
+                {/* Dropdown Menus (Mobile & Desktop Overflow) */}
+                <div className="relative">
+                    {/* Mobile Dropdown (Popup Style) */}
+                    <div className={`lg:hidden absolute top-full right-0 mt-4 w-64 bg-white/10 backdrop-blur-xl rounded-[2rem] border border-white/20 shadow-2xl overflow-hidden transition-all duration-500 ease-in-out ${isMenuOpen ? "max-h-screen opacity-100 translate-y-0" : "max-h-0 opacity-0 -translate-y-4 pointer-events-none"}`}>
+                        <ul className="flex flex-col p-4 text-center text-lg font-medium text-white">
+                            {[...MENU_ITEMS, "Internal"].map((item) => (
+                                <li key={item} onClick={() => setIsMenuOpen(false)}>
+                                    <Link href={`/${item.toLowerCase()}`} className="block py-3 hover:bg-white/10 rounded-2xl transition-all">
+                                        {item}
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                 </div>
             </nav>
         </>
