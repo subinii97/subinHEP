@@ -16,16 +16,104 @@ export default function InternalPage() {
 
     // Forms
     const [showAppForm, setShowAppForm] = useState(false);
-    const [newApp, setNewApp] = useState({ university: "", status: "In Progress", deadline: "", notes: "" });
+    const [newApp, setNewApp] = useState({ university: "", status: "In Progress", deadline: "", notes: "", timezone: "Local" });
+    const [editingApp, setEditingApp] = useState(null); // 수정 중인 박사 지원 정보
     const [showScheduleForm, setShowScheduleForm] = useState(false);
-    const [newSchedule, setNewSchedule] = useState({ title: "", category: "Research", event_date: "" });
+    const [newSchedule, setNewSchedule] = useState({ title: "", category: "Research", event_date: "", timezone: "Local" });
+    const [editingSchedule, setEditingSchedule] = useState(null); // 수정 중인 스케줄
+
+    const TIMEZONES = [
+        { label: 'Local (Device Time)', value: 'Local', offset: null },
+        { label: 'UTC', value: 'UTC', offset: 0 },
+        { label: 'KST (UTC+9)', value: 'KST', offset: 9 },
+        { label: 'CET (UTC+1)', value: 'CET', offset: 1 },
+        { label: 'CEST (UTC+2)', value: 'CEST', offset: 2 },
+        { label: 'EST (UTC-5)', value: 'EST', offset: -5 },
+        { label: 'EDT (UTC-4)', value: 'EDT', offset: -4 },
+        { label: 'PST (UTC-8)', value: 'PST', offset: -8 },
+        { label: 'PDT (UTC-7)', value: 'PDT', offset: -7 },
+    ];
+
+    const formatDateWithTimezone = (dateString, timezoneValue) => {
+        if (!dateString) return '-';
+        if (!timezoneValue || timezoneValue === 'Local') {
+            return new Date(dateString).toLocaleString([], { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).replace(/\//g, '. ');
+        }
+
+        const str = String(dateString);
+
+        // 1. Try ISO-like format: YYYY-MM-DD (or / .)
+        const isoMatch = str.match(/(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:[T\s](\d{1,2}):(\d{2}))?/);
+        if (isoMatch) {
+            const [_, y, m, d, h, min] = isoMatch;
+            const mm = m.padStart(2, '0');
+            const dd = d.padStart(2, '0');
+            const hh = (h || '00').padStart(2, '0');
+            const minmin = (min || '00').padStart(2, '0');
+            return `${y}. ${mm}. ${dd}. ${hh}:${minmin} (${timezoneValue})`;
+        }
+
+        // 2. Try US format: MM/DD/YYYY
+        const usMatch = str.match(/(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})(?:[,\s]+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*(AM|PM))?)?/i);
+        if (usMatch) {
+            let [_, m, d, y, h, min, sec, ampm] = usMatch;
+            const mm = m.padStart(2, '0');
+            const dd = d.padStart(2, '0');
+            let hour = parseInt(h || '0');
+
+            // Handle AM/PM conversion if present
+            if (ampm) {
+                if (ampm.toUpperCase() === 'PM' && hour < 12) hour += 12;
+                if (ampm.toUpperCase() === 'AM' && hour === 12) hour = 0;
+            }
+
+            const hh = String(hour).padStart(2, '0');
+            const minmin = (min || '00').padStart(2, '0');
+            return `${y}. ${mm}. ${dd}. ${hh}:${minmin} (${timezoneValue})`;
+        }
+
+        // 3. Fallback: Just return the raw string to avoid timezone shifting
+        return str + ` (${timezoneValue})`;
+    };
+
+    const formatForInput = (dateString) => {
+        if (!dateString) return "";
+        const str = String(dateString);
+
+        // 1. Try ISO: YYYY-MM-DD...
+        const isoMatch = str.match(/(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:[T\s](\d{1,2}):(\d{2}))?/);
+        if (isoMatch) {
+            const [_, y, m, d, h, min] = isoMatch;
+            return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}T${(h || '00').padStart(2, '0')}:${(min || '00').padStart(2, '0')}`;
+        }
+
+        // 2. Try US: MM/DD/YYYY...
+        const usMatch = str.match(/(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})(?:[,\s]+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*(AM|PM))?)?/i);
+        if (usMatch) {
+            let [_, m, d, y, h, min, sec, ampm] = usMatch;
+            let hour = parseInt(h || '0');
+            if (ampm) {
+                if (ampm.toUpperCase() === 'PM' && hour < 12) hour += 12;
+                if (ampm.toUpperCase() === 'AM' && hour === 12) hour = 0;
+            }
+            return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}T${String(hour).padStart(2, '0')}:${(min || '00').padStart(2, '0')}`;
+        }
+
+        return "";
+    };
 
     const CORRECT_ID = process.env.NEXT_PUBLIC_INTERNAL_ID;
     const CORRECT_PASSWORD = process.env.NEXT_PUBLIC_INTERNAL_PASSWORD;
 
     const handleLogin = (e) => {
         e.preventDefault();
-        if (authId === CORRECT_ID && authPassword === CORRECT_PASSWORD) {
+
+        if (!CORRECT_ID || !CORRECT_PASSWORD) {
+            setError("System configuration error: Credentials not loaded. Please restart the server.");
+            return;
+        }
+
+        if (authId.trim() === CORRECT_ID && authPassword === CORRECT_PASSWORD) {
             setIsAuthenticated(true);
             setError("");
             sessionStorage.setItem("internal_auth", "true");
@@ -98,22 +186,100 @@ export default function InternalPage() {
 
     const addApp = async (e) => {
         e.preventDefault();
-        const { error } = await supabase.from("phd_applications").insert([newApp]);
-        if (!error) {
-            setShowAppForm(false);
-            setNewApp({ university: "", status: "In Progress", deadline: "", notes: "" });
-            fetchData();
+        const payload = {
+            university: newApp.university,
+            status: newApp.status,
+            notes: newApp.notes,
+            deadline: newApp.deadline, // Raw string 저장
+            timezone: newApp.timezone // DB 저장을 위해 추가
+        };
+
+        if (editingApp) {
+            const { error } = await supabase.from("phd_applications").update(payload).eq("id", editingApp.id);
+
+            if (!error) {
+                setShowAppForm(false);
+                setNewApp({ university: "", status: "In Progress", deadline: "", notes: "", timezone: "Local" });
+                setEditingApp(null);
+                fetchData();
+            }
+        } else {
+            const { error } = await supabase.from("phd_applications").insert([payload]);
+            if (!error) {
+                setShowAppForm(false);
+                setNewApp({ university: "", status: "In Progress", deadline: "", notes: "", timezone: "Local" });
+                fetchData();
+            }
         }
+    };
+
+    const deleteApp = async (id) => {
+        if (confirm("Are you sure you want to delete this application?")) {
+            const { error } = await supabase.from("phd_applications").delete().eq("id", id);
+            if (!error) fetchData();
+        }
+    };
+
+    const startEditApp = (item) => {
+        setNewApp({
+            university: item.university,
+            status: item.status,
+            deadline: formatForInput(item.deadline), // Robust formatting for input
+            notes: item.notes || "",
+            timezone: item.timezone || "Local"
+        });
+        setEditingApp(item);
+        setShowAppForm(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // 맨 위로
     };
 
     const addSchedule = async (e) => {
         e.preventDefault();
-        const { error } = await supabase.from("schedules").insert([newSchedule]);
-        if (!error) {
-            setShowScheduleForm(false);
-            setNewSchedule({ title: "", category: "Research", event_date: "" });
-            fetchData();
+
+        // 날짜/시간을 Raw String으로 저장
+        const payload = {
+            title: newSchedule.title,
+            category: newSchedule.category,
+            event_date: newSchedule.event_date,
+            timezone: newSchedule.timezone // DB 저장을 위해 추가
+        };
+
+        if (editingSchedule) {
+            const { error } = await supabase.from("schedules").update(payload).eq("id", editingSchedule.id);
+
+            if (!error) {
+                setShowScheduleForm(false);
+                setNewSchedule({ title: "", category: "Research", event_date: "", timezone: "Local" });
+                setEditingSchedule(null);
+                fetchData();
+            }
+        } else {
+            const { error } = await supabase.from("schedules").insert([payload]);
+            if (!error) {
+                setShowScheduleForm(false);
+                setNewSchedule({ title: "", category: "Research", event_date: "", timezone: "Local" });
+                fetchData();
+            }
         }
+    };
+
+    const deleteSchedule = async (id) => {
+        if (confirm("Are you sure you want to delete this event?")) {
+            const { error } = await supabase.from("schedules").delete().eq("id", id);
+            if (!error) fetchData();
+        }
+    };
+
+    const startEditSchedule = (item) => {
+        setNewSchedule({
+            title: item.title,
+            category: item.category,
+            event_date: formatForInput(item.event_date), // Robust formatting for input
+            timezone: item.timezone || "Local"
+        });
+        setEditingSchedule(item);
+        setShowScheduleForm(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const [showPassword, setShowPassword] = useState(false);
@@ -179,61 +345,23 @@ export default function InternalPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                {/* Upcoming Alerts */}
-                <aside className="lg:col-span-1 space-y-6">
-                    <h2 className="text-xl font-bold text-white flex items-center gap-3">
-                        <span className="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center text-red-500 text-sm">🔔</span>
-                        Upcoming
-                    </h2>
+            {/* Main Content Grid: 3 Columns total (2 for PhD, 1 for Schedule) */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                    <div className="space-y-3">
-                        {upcomingTasks.length === 0 ? (
-                            <div className="p-6 bg-white/5 rounded-2xl border border-dashed border-white/10 text-center">
-                                <p className="text-white/30 text-xs">No urgent tasks</p>
-                            </div>
-                        ) : (
-                            upcomingTasks.map((task) => (
-                                <div key={task.id} className={`p-4 rounded-2xl border transition-all ${task.type === 'deadline'
-                                    ? 'bg-red-500/10 border-red-500/20'
-                                    : 'bg-blue-500/10 border-blue-500/20'
-                                    }`}>
-                                    <div className="flex justify-between items-start mb-2">
-                                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${task.type === 'deadline' ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400'
-                                            }`}>
-                                            {task.type.toUpperCase()}
-                                        </span>
-                                        <span className="text-white/40 text-[10px] tabular-nums">
-                                            {Math.ceil((new Date(task.date) - new Date()) / (1000 * 60 * 60 * 24))}d left
-                                        </span>
-                                    </div>
-                                    <h4 className="text-white font-bold text-sm leading-tight mb-1">{task.title}</h4>
-                                    <p className="text-white/40 text-[10px] font-mono">
-                                        {new Date(task.date).toLocaleDateString()}
-                                    </p>
-                                </div>
-                            ))
-                        )}
-                    </div>
-
-                    <div className="p-6 bg-gradient-to-br from-[#718eac]/20 to-transparent rounded-3xl border border-white/10 mt-8">
-                        <h3 className="text-white font-bold mb-3">Quick Tip</h3>
-                        <p className="text-white/60 text-xs leading-relaxed">
-                            Check all submission portals 24h before deadline. Don't forget the time zone differences.
-                        </p>
-                    </div>
-                </aside>
-
-                {/* PhD App Board & Schedule */}
-                <div className="lg:col-span-3 space-y-12">
-                    {/* PhD Application Tracker */}
+                {/* PhD App Board (Left, 2 Columns) */}
+                <div className="lg:col-span-2 space-y-6">
                     <section className="space-y-6">
                         <div className="flex items-center justify-between">
                             <h2 className="text-2xl font-bold text-white flex items-center gap-3">
                                 <span className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center text-purple-400 text-sm">🎓</span>
                                 PhD Application Status
                             </h2>
-                            <button onClick={() => setShowAppForm(!showAppForm)} className="text-[#E6E6FA] text-sm font-medium hover:underline">
+                            <button onClick={() => {
+                                setShowAppForm(!showAppForm);
+                                setEditingApp(null);
+                                const nowISO = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                                setNewApp({ university: "", status: "In Progress", deadline: nowISO, notes: "", timezone: "Local" });
+                            }} className="text-[#E6E6FA] text-sm font-medium hover:underline">
                                 {showAppForm ? "Cancel" : "+ Add Program"}
                             </button>
                         </div>
@@ -252,17 +380,25 @@ export default function InternalPage() {
                                         <option value="Interview">Interview</option>
                                         <option value="Accepted">Accepted</option>
                                         <option value="Rejected">Rejected</option>
+                                        <option value="Considering">Considering</option>
                                     </select>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-white/40 text-[10px] font-bold uppercase ml-2">Deadline</label>
-                                    <input type="date" value={newApp.deadline} onChange={e => setNewApp({ ...newApp, deadline: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:border-[#718eac] transition-all" />
+                                    <label className="text-white/40 text-[10px] font-bold uppercase ml-2">Deadline & Timezone</label>
+                                    <div className="flex gap-2">
+                                        <input type="datetime-local" value={newApp.deadline} onChange={e => setNewApp({ ...newApp, deadline: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:border-[#718eac] transition-all" />
+                                        <select value={newApp.timezone} onChange={e => setNewApp({ ...newApp, timezone: e.target.value })} className="w-24 px-2 py-3 bg-white/5 border border-white/10 rounded-2xl text-white outline-none text-xs">
+                                            {TIMEZONES.map(tz => <option key={tz.value} value={tz.value}>{tz.value}</option>)}
+                                        </select>
+                                    </div>
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-white/40 text-[10px] font-bold uppercase ml-2">Notes</label>
                                     <input value={newApp.notes} onChange={e => setNewApp({ ...newApp, notes: e.target.value })} placeholder="Details or missing docs..." className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:border-[#718eac] transition-all" />
                                 </div>
-                                <Button type="submit" className="md:col-span-2 py-4 rounded-2xl text-lg font-bold">Register Program</Button>
+                                <Button type="submit" className="md:col-span-2 py-4 rounded-2xl text-lg font-bold">
+                                    {editingApp ? "Update Application" : "Register Program"}
+                                </Button>
                             </form>
                         )}
 
@@ -274,21 +410,29 @@ export default function InternalPage() {
                                         <th className="px-6 py-5 text-white/40 text-[10px] font-bold uppercase tracking-widest">Status</th>
                                         <th className="px-6 py-5 text-white/40 text-[10px] font-bold uppercase tracking-widest">Deadline</th>
                                         <th className="px-6 py-5 text-white/40 text-[10px] font-bold uppercase tracking-widest">Notes</th>
+                                        <th className="px-6 py-5 text-white/40 text-[10px] font-bold uppercase tracking-widest text-right">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5 text-white/80">
                                     {apps.map((app, i) => (
                                         <tr key={i} className="hover:bg-white/5 transition-all group">
-                                            <td className="px-6 py-5 font-bold text-white group-hover:text-[#718eac] transition-colors">{app.university}</td>
+                                            <td className="px-6 py-5 font-bold text-white transition-colors">{app.university}</td>
                                             <td className="px-6 py-5">
                                                 <span className={`px-2.5 py-1 text-[10px] font-black rounded-lg uppercase tracking-tight ${app.status === 'Accepted' ? 'bg-green-500/20 text-green-400' :
                                                     app.status === 'Interview' ? 'bg-blue-500/20 text-blue-400' :
                                                         app.status === 'Rejected' ? 'bg-red-500/20 text-red-400' :
-                                                            'bg-yellow-500/20 text-yellow-500'
+                                                            app.status === 'Considering' ? 'bg-gray-500/20 text-gray-400' :
+                                                                'bg-yellow-500/20 text-yellow-500'
                                                     }`}>{app.status}</span>
                                             </td>
-                                            <td className="px-6 py-5 text-sm font-mono opacity-80">{app.deadline}</td>
-                                            <td className="px-6 py-5 text-sm opacity-60 italic">{app.notes || '—'}</td>
+                                            <td className="px-6 py-5 text-sm font-mono text-white/70">{formatDateWithTimezone(app.deadline, app.timezone)}</td>
+                                            <td className="px-6 py-5 text-base text-white/70 italic">{app.notes || '—'}</td>
+                                            <td className="px-6 py-5">
+                                                <div className="flex flex-col gap-2 items-end">
+                                                    <button onClick={() => startEditApp(app)} className="w-16 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold text-white transition-all border border-white/5 hover:border-white/20">Edit</button>
+                                                    <button onClick={() => deleteApp(app.id)} className="w-16 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 rounded-lg text-xs font-bold text-red-400 transition-all border border-red-500/10 hover:border-red-500/30">Delete</button>
+                                                </div>
+                                            </td>
                                         </tr>
                                     ))}
                                     {apps.length === 0 && !loading && (
@@ -298,56 +442,73 @@ export default function InternalPage() {
                             </table>
                         </div>
                     </section>
+                </div>
 
-                    {/* Schedule Section */}
+                {/* Schedule Section (Right, 1 Column) */}
+                <div className="lg:col-span-1 space-y-6">
                     <section className="space-y-6">
                         <div className="flex items-center justify-between">
                             <h2 className="text-2xl font-bold text-white flex items-center gap-3">
                                 <span className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center text-blue-400 text-sm">📅</span>
                                 Schedule
                             </h2>
-                            <button onClick={() => setShowScheduleForm(!showScheduleForm)} className="text-[#E6E6FA] text-sm font-medium hover:underline">
+                            <button onClick={() => {
+                                setShowScheduleForm(!showScheduleForm);
+                                setEditingSchedule(null);
+                                const nowISO = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                                setNewSchedule({ title: "", category: "Research", event_date: nowISO, timezone: "Local" });
+                            }} className="text-[#E6E6FA] text-sm font-medium hover:underline">
                                 {showScheduleForm ? "Cancel" : "+ New Event"}
                             </button>
                         </div>
 
                         {showScheduleForm && (
-                            <form onSubmit={addSchedule} className="p-8 bg-white/5 backdrop-blur-md rounded-[2.5rem] border border-[#718eac]/30 space-y-4 animate-in slide-in-from-top-2 max-w-xl">
+                            <form onSubmit={addSchedule} className="p-8 bg-white/5 backdrop-blur-md rounded-[2.5rem] border border-[#718eac]/30 space-y-4 animate-in slide-in-from-top-2">
                                 <input value={newSchedule.title} onChange={e => setNewSchedule({ ...newSchedule, title: e.target.value })} placeholder="Event Title" className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:border-[#718eac] transition-all" required />
-                                <div className="grid grid-cols-2 gap-4">
-                                    <select value={newSchedule.category} onChange={e => setNewSchedule({ ...newSchedule, category: e.target.value })} className="px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none">
+                                <div className="space-y-2">
+                                    <select value={newSchedule.category} onChange={e => setNewSchedule({ ...newSchedule, category: e.target.value })} className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none">
                                         <option value="Research">Research</option>
                                         <option value="Meeting">Meeting</option>
                                         <option value="Personal">Personal</option>
                                         <option value="Deadline">Deadline</option>
                                     </select>
-                                    <input type="datetime-local" value={newSchedule.event_date} onChange={e => setNewSchedule({ ...newSchedule, event_date: e.target.value })} className="px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none" />
+                                    <div className="flex gap-2">
+                                        <input type="datetime-local" value={newSchedule.event_date} onChange={e => setNewSchedule({ ...newSchedule, event_date: e.target.value })} className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none" />
+                                        <select value={newSchedule.timezone} onChange={e => setNewSchedule({ ...newSchedule, timezone: e.target.value })} className="w-24 px-2 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none text-xs">
+                                            {TIMEZONES.map(tz => <option key={tz.value} value={tz.value}>{tz.value}</option>)}
+                                        </select>
+                                    </div>
                                 </div>
-                                <Button type="submit" className="w-full py-4 rounded-2xl font-bold">Push to Timeline</Button>
+                                <Button type="submit" className="w-full py-4 rounded-2xl font-bold">
+                                    {editingSchedule ? "Update Event" : "Push to Timeline"}
+                                </Button>
                             </form>
                         )}
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-4">
                             {schedules.map((item, i) => (
-                                <div key={i} className="p-6 bg-white/5 rounded-3xl border border-white/10 group hover:bg-white/10 hover:border-white/30 transition-all flex justify-between items-center">
-                                    <div>
-                                        <p className={`text-[10px] font-black mb-1 uppercase tracking-[0.2em] ${item.category === 'Research' ? 'text-purple-400' :
+                                <div key={i} className="p-6 bg-white/5 rounded-3xl border border-white/10 hover:bg-white/10 transition-all">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${item.category === 'Research' ? 'text-purple-400' :
                                             item.category === 'Meeting' ? 'text-blue-400' :
-                                                item.category === 'Deadline' ? 'text-red-400' : 'text-[#718eac]'
-                                            }`}>{item.category}</p>
-                                        <h4 className="text-white font-bold text-xl group-hover:text-[#718eac] transition-colors">{item.title}</h4>
-                                        <p className="text-white/30 text-xs font-mono mt-2 flex items-center gap-2">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                            {new Date(item.event_date).toLocaleString()}
-                                        </p>
+                                                item.category === 'Deadline' ? 'text-red-400' : 'text-white/80'
+                                            }`}>{item.category}</span>
+                                        <div className="flex gap-2">
+                                            <button onClick={() => startEditSchedule(item)} className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-[11px] text-white font-bold transition-colors">Edit</button>
+                                            <button onClick={() => deleteSchedule(item.id)} className="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 rounded-lg text-[11px] text-red-400 font-bold transition-colors">Delete</button>
+                                        </div>
                                     </div>
-                                    <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
-                                        {item.category === 'Research' ? '🧪' : item.category === 'Meeting' ? '👥' : item.category === 'Deadline' ? '🚨' : '✨'}
+
+                                    <h4 className="text-white font-bold text-lg mb-2">{item.title}</h4>
+
+                                    <div className="flex items-center gap-2 text-white/70 text-sm font-mono">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                        {formatDateWithTimezone(item.event_date, item.timezone)}
                                     </div>
                                 </div>
                             ))}
                             {schedules.length === 0 && !loading && (
-                                <div className="col-span-2 p-12 bg-white/5 rounded-[2.5rem] border border-dashed border-white/10 text-center">
+                                <div className="p-12 bg-white/5 rounded-[2.5rem] border border-dashed border-white/10 text-center">
                                     <p className="text-white/20 font-medium">No scheduled events.</p>
                                 </div>
                             )}

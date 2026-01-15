@@ -114,12 +114,16 @@ export default function StudyPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [desktopViewPreference, setDesktopViewPreference] = useState("grid"); // 기억해둔 선호도
   const [isMobile, setIsMobile] = useState(false);
+  const [isLargeScreen, setIsLargeScreen] = useState(false); // 1024px 이상 여부
 
   useEffect(() => {
-    // 초기 모바일 여부 확인 및 리스너 등록
-    const checkMobile = () => {
-      const mobile = window.innerWidth < 768;
+    // 초기 모바일/화면 크기 확인 및 리스너 등록
+    const checkResponsive = () => {
+      const width = window.innerWidth;
+      const mobile = width < 768;
       setIsMobile(mobile);
+      setIsLargeScreen(width >= 1024);
+
       // Grid인 경우에만 좁아질 때 Card로 전환, List는 고대 유지
       if (mobile) {
         if (desktopViewPreference === "grid") setViewMode("card");
@@ -128,9 +132,9 @@ export default function StudyPage() {
         setViewMode(desktopViewPreference);
       }
     };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    checkResponsive();
+    window.addEventListener('resize', checkResponsive);
+    return () => window.removeEventListener('resize', checkResponsive);
   }, [desktopViewPreference]);
 
   // 사용자가 데스크탑에서 수동으로 모드를 바꿨을 때 기억
@@ -142,7 +146,10 @@ export default function StudyPage() {
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = isMobile ? 5 : (viewMode === "grid" ? 8 : viewMode === "card" ? 5 : 10);
+  // 모바일/카드: 5개
+  // 그리드: Large(4열) -> 8개, Medium(3열) -> 6개
+  // 리스트: 10개
+  const itemsPerPage = isMobile ? 5 : (viewMode === "grid" ? (isLargeScreen ? 8 : 6) : viewMode === "card" ? 5 : 10);
 
   useEffect(() => {
     setCurrentPage(1);

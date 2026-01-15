@@ -182,18 +182,22 @@ export default function AnonymousBoard() {
   const [selectedPost, setSelectedPost] = useState(null);
   const [desktopViewPreference, setDesktopViewPreference] = useState("grid"); // 데스크탑에서 수동 설정한 값 기억
   const [isMobile, setIsMobile] = useState(false);
+  const [isLargeScreen, setIsLargeScreen] = useState(false); // 1024px 이상 여부
 
   useEffect(() => {
-    // 초기 모바일 여부 확인 및 리스너 등록
-    const checkMobile = () => {
-      const mobile = window.innerWidth < 768;
+    // 초기 모바일/화면 크기 확인 및 리스너 등록
+    const checkResponsive = () => {
+      const width = window.innerWidth;
+      const mobile = width < 768;
       setIsMobile(mobile);
+      setIsLargeScreen(width >= 1024);
+
       // 모바일이면 무조건 card, 데스크탑이면 기억해둔 선호도로 복구
       setViewMode(mobile ? "card" : desktopViewPreference);
     };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    checkResponsive();
+    window.addEventListener('resize', checkResponsive);
+    return () => window.removeEventListener('resize', checkResponsive);
   }, [desktopViewPreference]);
 
   // 사용자가 데스크탑에서 수동으로 모드를 바꿨을 때 기억
@@ -212,7 +216,10 @@ export default function AnonymousBoard() {
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = isMobile ? 5 : (viewMode === "grid" ? 8 : 5);
+  // 모바일: 5개
+  // 그리드: Large(4열) -> 8개, Medium(3열) -> 6개
+  // 카드: 5개
+  const itemsPerPage = isMobile ? 5 : (viewMode === "grid" ? (isLargeScreen ? 8 : 6) : 5);
 
   useEffect(() => {
     setCurrentPage(1);
