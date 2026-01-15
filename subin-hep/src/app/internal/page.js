@@ -18,6 +18,7 @@ export default function InternalPage() {
     const [showAppForm, setShowAppForm] = useState(false);
     const [newApp, setNewApp] = useState({ university: "", status: "In Progress", deadline: "", notes: "", timezone: "Local" });
     const [editingApp, setEditingApp] = useState(null); // 수정 중인 박사 지원 정보
+    const [selectedApp, setSelectedApp] = useState(null); // 상세 보기 중인 박사 지원 정보
     const [showScheduleForm, setShowScheduleForm] = useState(false);
     const [newSchedule, setNewSchedule] = useState({ title: "", category: "Research", event_date: "", timezone: "Local" });
     const [editingSchedule, setEditingSchedule] = useState(null); // 수정 중인 스케줄
@@ -36,8 +37,20 @@ export default function InternalPage() {
 
     const formatDateWithTimezone = (dateString, timezoneValue) => {
         if (!dateString) return '-';
+        const d = new Date(dateString);
+
+        // Helper to format as YYYY.MM.DD HH:mm
+        const getBase = (dt) => {
+            const y = dt.getFullYear();
+            const m = String(dt.getMonth() + 1).padStart(2, '0');
+            const day = String(dt.getDate()).padStart(2, '0');
+            const hh = String(dt.getHours()).padStart(2, '0');
+            const minmin = String(dt.getMinutes()).padStart(2, '0');
+            return `${y}.${m}.${day} ${hh}:${minmin}`;
+        };
+
         if (!timezoneValue || timezoneValue === 'Local') {
-            return new Date(dateString).toLocaleString([], { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).replace(/\//g, '. ');
+            return getBase(d);
         }
 
         const str = String(dateString);
@@ -45,31 +58,28 @@ export default function InternalPage() {
         // 1. Try ISO-like format: YYYY-MM-DD (or / .)
         const isoMatch = str.match(/(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:[T\s](\d{1,2}):(\d{2}))?/);
         if (isoMatch) {
-            const [_, y, m, d, h, min] = isoMatch;
+            const [_, y, m, day, h, min] = isoMatch;
             const mm = m.padStart(2, '0');
-            const dd = d.padStart(2, '0');
+            const dd = day.padStart(2, '0');
             const hh = (h || '00').padStart(2, '0');
             const minmin = (min || '00').padStart(2, '0');
-            return `${y}. ${mm}. ${dd}. ${hh}:${minmin} (${timezoneValue})`;
+            return `${y}.${mm}.${dd} ${hh}:${minmin} (${timezoneValue})`;
         }
 
         // 2. Try US format: MM/DD/YYYY
         const usMatch = str.match(/(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})(?:[,\s]+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*(AM|PM))?)?/i);
         if (usMatch) {
-            let [_, m, d, y, h, min, sec, ampm] = usMatch;
+            let [_, m, day, y, h, min, sec, ampm] = usMatch;
             const mm = m.padStart(2, '0');
-            const dd = d.padStart(2, '0');
+            const dd = day.padStart(2, '0');
             let hour = parseInt(h || '0');
-
-            // Handle AM/PM conversion if present
             if (ampm) {
                 if (ampm.toUpperCase() === 'PM' && hour < 12) hour += 12;
                 if (ampm.toUpperCase() === 'AM' && hour === 12) hour = 0;
             }
-
             const hh = String(hour).padStart(2, '0');
             const minmin = (min || '00').padStart(2, '0');
-            return `${y}. ${mm}. ${dd}. ${hh}:${minmin} (${timezoneValue})`;
+            return `${y}.${mm}.${dd} ${hh}:${minmin} (${timezoneValue})`;
         }
 
         // 3. Fallback: Just return the raw string to avoid timezone shifting
@@ -100,6 +110,29 @@ export default function InternalPage() {
         }
 
         return "";
+    };
+
+    const renderNotesWithLinks = (text) => {
+        if (!text) return '—';
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        const parts = text.split(urlRegex);
+        return parts.map((part, i) => {
+            if (part.match(urlRegex)) {
+                return (
+                    <a
+                        key={i}
+                        href={part}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:text-blue-300 underline underline-offset-4 decoration-blue-400/30 transition-all font-medium"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {part}
+                    </a>
+                );
+            }
+            return part;
+        });
     };
 
     const CORRECT_ID = process.env.NEXT_PUBLIC_INTERNAL_ID;
@@ -287,7 +320,7 @@ export default function InternalPage() {
     if (!isAuthenticated) {
         return (
             <div className="min-h-[70vh] flex items-center justify-center px-4">
-                <div className="w-full max-w-md p-8 bg-white/5 backdrop-blur-xl rounded-[2.5rem] border border-white/10 shadow-2xl">
+                <div className="w-full max-w-md p-8 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl">
                     <div className="text-center mb-8">
                         <div className="w-16 h-16 bg-[#718eac]/20 rounded-2xl flex items-center justify-center text-[#718eac] text-3xl mx-auto mb-4">
                             🔒
@@ -367,7 +400,7 @@ export default function InternalPage() {
                         </div>
 
                         {showAppForm && (
-                            <form onSubmit={addApp} className="p-8 bg-white/5 backdrop-blur-md rounded-[2.5rem] border border-[#718eac]/30 grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-top-2">
+                            <form onSubmit={addApp} className="p-8 bg-white/5 backdrop-blur-md rounded-3xl border border-[#718eac]/30 grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-top-2">
                                 <div className="space-y-1">
                                     <label className="text-white/40 text-[10px] font-bold uppercase ml-2">University / Program</label>
                                     <input value={newApp.university} onChange={e => setNewApp({ ...newApp, university: e.target.value })} placeholder="e.g. Stanford University" className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:border-[#718eac] transition-all" required />
@@ -402,37 +435,47 @@ export default function InternalPage() {
                             </form>
                         )}
 
-                        <div className="overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/5 shadow-2xl">
-                            <table className="w-full text-left border-collapse">
+                        <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl">
+                            <table className="w-full text-left border-collapse table-fixed">
                                 <thead>
                                     <tr className="border-b border-white/10 bg-white/10">
-                                        <th className="px-6 py-5 text-white/40 text-[10px] font-bold uppercase tracking-widest">University</th>
-                                        <th className="px-6 py-5 text-white/40 text-[10px] font-bold uppercase tracking-widest">Status</th>
-                                        <th className="px-6 py-5 text-white/40 text-[10px] font-bold uppercase tracking-widest">Deadline</th>
-                                        <th className="px-6 py-5 text-white/40 text-[10px] font-bold uppercase tracking-widest">Notes</th>
-                                        <th className="px-6 py-5 text-white/40 text-[10px] font-bold uppercase tracking-widest text-right">Actions</th>
+                                        <th className="w-48 px-6 py-5 text-white/80 text-[10px] font-bold uppercase tracking-widest border-r border-white/10 text-center">University</th>
+                                        <th className="w-28 px-6 py-5 text-white/80 text-[10px] font-bold uppercase tracking-widest border-r border-white/10 text-center">Status</th>
+                                        <th className="w-40 px-6 py-5 text-white/80 text-[10px] font-bold uppercase tracking-widest border-r border-white/10 text-center">Deadline</th>
+                                        <th className="w-auto px-6 py-5 text-white/80 text-[10px] font-bold uppercase tracking-widest text-center">Notes</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5 text-white/80">
                                     {apps.map((app, i) => (
-                                        <tr key={i} className="hover:bg-white/5 transition-all group">
-                                            <td className="px-6 py-5 font-bold text-white transition-colors">{app.university}</td>
-                                            <td className="px-6 py-5">
-                                                <span className={`px-2.5 py-1 text-[10px] font-black rounded-lg uppercase tracking-tight ${app.status === 'Accepted' ? 'bg-green-500/20 text-green-400' :
-                                                    app.status === 'Interview' ? 'bg-blue-500/20 text-blue-400' :
-                                                        app.status === 'Rejected' ? 'bg-red-500/20 text-red-400' :
-                                                            app.status === 'Considering' ? 'bg-gray-500/20 text-gray-400' :
-                                                                'bg-yellow-500/20 text-yellow-500'
-                                                    }`}>{app.status}</span>
-                                            </td>
-                                            <td className="px-6 py-5 text-sm font-mono text-white/70">{formatDateWithTimezone(app.deadline, app.timezone)}</td>
-                                            <td className="px-6 py-5 text-base text-white/70 italic">{app.notes || '—'}</td>
-                                            <td className="px-6 py-5">
-                                                <div className="flex flex-col gap-2 items-end">
-                                                    <button onClick={() => startEditApp(app)} className="w-16 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold text-white transition-all border border-white/5 hover:border-white/20">Edit</button>
-                                                    <button onClick={() => deleteApp(app.id)} className="w-16 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 rounded-lg text-xs font-bold text-red-400 transition-all border border-red-500/10 hover:border-red-500/30">Delete</button>
+                                        <tr key={i} onClick={() => setSelectedApp(app)} className="hover:bg-white/5 transition-all group cursor-pointer">
+                                            <td className="px-6 py-5 font-bold text-white transition-colors border-r border-white/5">{app.university}</td>
+                                            <td className="px-6 py-5 border-r border-white/5">
+                                                <div className="flex justify-center">
+                                                    <span className={`px-2.5 py-1 text-[10px] font-black rounded-lg uppercase tracking-tight ${app.status === 'Accepted' ? 'bg-green-500/20 text-green-400' :
+                                                        app.status === 'Interview' ? 'bg-blue-500/20 text-blue-400' :
+                                                            app.status === 'Rejected' ? 'bg-red-500/20 text-red-400' :
+                                                                app.status === 'Considering' ? 'bg-gray-500/20 text-gray-400' :
+                                                                    'bg-yellow-500/20 text-yellow-500'
+                                                        }`}>{app.status}</span>
                                                 </div>
                                             </td>
+                                            <td className="px-6 py-5 text-sm font-mono text-white/70 border-r border-white/5 text-center">
+                                                {(() => {
+                                                    const formatted = formatDateWithTimezone(app.deadline, app.timezone);
+                                                    // New Pattern: "YYYY.MM.DD HH:mm (TZ)" -> split into "YYYY.MM.DD" and "HH:mm (TZ)"
+                                                    const match = formatted.match(/^(\d{4}\.\d{2}\.\d{2}) (.*)$/);
+                                                    if (match) {
+                                                        return (
+                                                            <div className="flex flex-col items-center">
+                                                                <span className="whitespace-nowrap">{match[1]}</span>
+                                                                <span className="text-[10px] text-white/40 font-bold tracking-wider">{match[2]}</span>
+                                                            </div>
+                                                        );
+                                                    }
+                                                    return formatted;
+                                                })()}
+                                            </td>
+                                            <td className="px-6 py-5 text-base text-white/70 italic">{renderNotesWithLinks(app.notes)}</td>
                                         </tr>
                                     ))}
                                     {apps.length === 0 && !loading && (
@@ -463,7 +506,7 @@ export default function InternalPage() {
                         </div>
 
                         {showScheduleForm && (
-                            <form onSubmit={addSchedule} className="p-8 bg-white/5 backdrop-blur-md rounded-[2.5rem] border border-[#718eac]/30 space-y-4 animate-in slide-in-from-top-2">
+                            <form onSubmit={addSchedule} className="p-8 bg-white/5 backdrop-blur-md rounded-3xl border border-[#718eac]/30 space-y-4 animate-in slide-in-from-top-2">
                                 <input value={newSchedule.title} onChange={e => setNewSchedule({ ...newSchedule, title: e.target.value })} placeholder="Event Title" className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:border-[#718eac] transition-all" required />
                                 <div className="space-y-2">
                                     <select value={newSchedule.category} onChange={e => setNewSchedule({ ...newSchedule, category: e.target.value })} className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none">
@@ -508,7 +551,7 @@ export default function InternalPage() {
                                 </div>
                             ))}
                             {schedules.length === 0 && !loading && (
-                                <div className="p-12 bg-white/5 rounded-[2.5rem] border border-dashed border-white/10 text-center">
+                                <div className="p-12 bg-white/5 rounded-3xl border border-dashed border-white/10 text-center">
                                     <p className="text-white/20 font-medium">No scheduled events.</p>
                                 </div>
                             )}
@@ -516,6 +559,77 @@ export default function InternalPage() {
                     </section>
                 </div>
             </div>
+            {/* PhD Application Detail Modal */}
+            {selectedApp && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 animate-in fade-in duration-300">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedApp(null)}></div>
+                    <div className="relative w-full max-w-lg bg-[#6b7887] border border-white/10 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+                        {/* Modal Header */}
+                        <div className="p-8 pb-0 flex justify-between items-start">
+                            <div className="space-y-1">
+                                <span className={`px-2.5 py-1 text-[10px] font-black rounded-lg uppercase tracking-tight ${selectedApp.status === 'Accepted' ? 'bg-green-500/20 text-green-400' :
+                                    selectedApp.status === 'Interview' ? 'bg-blue-500/20 text-blue-400' :
+                                        selectedApp.status === 'Rejected' ? 'bg-red-500/20 text-red-400' :
+                                            selectedApp.status === 'Considering' ? 'bg-gray-500/20 text-gray-400' :
+                                                'bg-yellow-500/10 text-yellow-500'
+                                    }`}>{selectedApp.status}</span>
+                                <h3 className="text-2xl font-bold text-[#FFF2E0] mt-2">{selectedApp.university}</h3>
+                            </div>
+                            <button onClick={() => setSelectedApp(null)} className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-full flex items-center justify-center text-[#FFF2E0]/40 group transition-all">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:rotate-90 transition-transform"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                        </div>
+
+                        {/* Modal Content */}
+                        <div className="p-8 space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-[#FFF2E0]/40 text-[10px] font-bold uppercase tracking-widest block ml-1">Deadline</label>
+                                <div className="px-5 py-4 bg-black/10 rounded-2xl border border-white/5 flex items-center gap-4">
+                                    <span className="text-xl">📅</span>
+                                    {(() => {
+                                        const formatted = formatDateWithTimezone(selectedApp.deadline, selectedApp.timezone);
+                                        const match = formatted.match(/^(\d{4}\.\d{2}\.\d{2}) (.*)$/);
+                                        if (match) {
+                                            return (
+                                                <div className="flex flex-col">
+                                                    <span className="text-[#FFF2E0] font-mono text-xl font-bold">{match[1]}</span>
+                                                    <span className="text-[#FFF2E0]/50 font-mono text-xs font-bold tracking-wider">{match[2]}</span>
+                                                </div>
+                                            );
+                                        }
+                                        return <span className="text-[#FFF2E0] font-mono text-lg">{formatted}</span>;
+                                    })()}
+                                </div>
+                            </div>
+
+                            {selectedApp.notes && (
+                                <div className="space-y-2">
+                                    <label className="text-[#FFF2E0]/40 text-[10px] font-bold uppercase tracking-widest block ml-1">Notes</label>
+                                    <div className="px-5 py-4 bg-black/10 rounded-2xl border border-white/5 text-[#FFF2E0]/90 italic leading-relaxed whitespace-pre-wrap text-base">
+                                        {renderNotesWithLinks(selectedApp.notes)}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Action Buttons */}
+                            <div className="grid grid-cols-2 gap-3 mt-8 pt-6 border-t border-white/10">
+                                <button
+                                    onClick={() => { startEditApp(selectedApp); setSelectedApp(null); }}
+                                    className="w-full py-2.5 bg-white/10 hover:bg-white/20 rounded-xl text-white text-sm font-bold transition-all border border-white/10 flex items-center justify-center"
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={() => { deleteApp(selectedApp.id); setSelectedApp(null); }}
+                                    className="w-full py-2.5 bg-red-500/20 hover:bg-red-500/30 rounded-xl text-red-100 text-sm font-bold transition-all border border-red-500/20 flex items-center justify-center"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

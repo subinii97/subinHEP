@@ -272,7 +272,7 @@ export default function ProfilePage() {
                   href={pub.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative flex flex-col sm:flex-row gap-2 items-start sm:items-center p-4 sm:p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 hover:border-white/30 transition-all hover:shadow-lg overflow-hidden"
+                  className="group relative flex flex-col-reverse sm:flex-row gap-2 items-start sm:items-center p-4 sm:p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 hover:border-white/30 transition-all hover:shadow-lg overflow-hidden"
                 >
                   <div className="flex-none w-full sm:w-24">
                     <div className="flex sm:flex-col items-center justify-center gap-2 sm:gap-0 w-full px-4 sm:px-2 py-1 bg-white/5 rounded-xl border border-white/10 group-hover:bg-white/10 group-hover:border-white/20 transition-colors">
