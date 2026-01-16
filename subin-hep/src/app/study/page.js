@@ -236,16 +236,47 @@ export default function StudyPage() {
   }, []);
 
   return (
-    <div className="max-w-[1400px] mx-auto p-4 md:p-10">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white">Study Board</h1>
-          <p className="text-white/60 text-sm mt-1">마크다운 파일로 기록된 공부 내용을 확인하세요.</p>
-        </div>
+    <div className="w-full">
+      <section className="relative w-full h-[220px] md:h-[320px] overflow-hidden -mt-[72px] md:-mt-[92px]">
+        <img
+          src="/assets/header_study.jpeg"
+          alt="Study Header"
+          className="w-full h-full object-cover brightness-[0.85] [mask-image:linear-gradient(to_bottom,black_90%,transparent_100%)]"
+        />
+        {/* Softened Gradient Overlay for depth and text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/10 to-transparent"></div>
 
-        <div className="flex items-center gap-3 self-end md:self-auto">
+        {/* Title Container - Constrained to match profile page width */}
+        <div className="absolute inset-0 flex items-end pb-16 md:pb-24">
+          <div className="max-w-7xl mx-auto px-4 w-full">
+            <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter [text-shadow:0_4px_12px_rgba(0,0,0,1),0_0_30px_rgba(0,0,0,0.8)]">
+              Study Board
+            </h1>
+          </div>
+        </div>
+      </section>
+
+      {/* Hero Action Bar - Controls */}
+      <div className="max-w-7xl mx-auto px-4 pt-8 -mb-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          {/* 카테고리 탭 */}
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide flex-1">
+            {categories.map(category => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`px-5 h-[42px] rounded-2xl transition-all whitespace-nowrap border flex items-center justify-center text-sm md:text-base ${selectedCategory === category
+                  ? 'bg-white/20 border-white/40 text-white shadow-[0_0_20px_rgba(255,255,255,0.1)]'
+                  : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white'
+                  }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+
           {/* 뷰 모드 스위처 */}
-          <div className="flex bg-white/10 p-1 rounded-xl border border-white/10">
+          <div className="flex bg-white/5 backdrop-blur-md h-[42px] items-center p-1 rounded-xl border border-white/10 shadow-xl self-end md:self-auto">
             {[
               { id: 'grid', icon: <GridIcon /> },
               { id: 'card', icon: <CardIcon /> },
@@ -254,7 +285,7 @@ export default function StudyPage() {
               <button
                 key={mode.id}
                 onClick={() => handleViewModeChange(mode.id)}
-                className={`px-3 py-1.5 rounded-lg transition-all flex items-center justify-center ${viewMode === mode.id ? 'bg-[#718eac] text-white' : 'text-white/50 hover:text-white'} ${mode.id === 'grid' ? 'hidden md:flex' : 'flex'}`}
+                className={`px-3 h-[34px] rounded-lg transition-all flex items-center justify-center ${viewMode === mode.id ? 'bg-[#718eac] text-white' : 'text-white/50 hover:text-white'} ${mode.id === 'grid' ? 'hidden md:flex' : 'flex'}`}
                 title={mode.id.toUpperCase()}
               >
                 {mode.icon}
@@ -264,59 +295,47 @@ export default function StudyPage() {
         </div>
       </div>
 
-      {/* 카테고리 탭 */}
-      <div className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-hide">
-        {categories.map(category => (
-          <button
-            key={category}
-            onClick={() => setSelectedCategory(category)}
-            className={`px-5 py-2 rounded-2xl transition-all whitespace-nowrap border ${selectedCategory === category
-              ? 'bg-white/20 border-white/40 text-white shadow-[0_0_20px_rgba(255,255,255,0.1)]'
-              : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white'
-              }`}
-          >
-            {category}
-          </button>
-        ))}
-      </div>
+      {/* Main Content Areas */}
+      <div className="max-w-7xl mx-auto px-4 py-12">
 
-      {/* 게시글 영역 */}
-      {
-        isLoading ? (
-          <div className="p-20 text-center text-white/30 font-bold animate-pulse">Loading Study Notes...</div>
-        ) : filteredPosts.length > 0 ? (
-          <>
-            <Pagination className="mb-8" />
-            {/* Grid View: Desktop only */}
-            <div className={`${(viewMode === 'grid' && !isMobile) ? 'grid' : 'hidden'} md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6`}>
-              {filteredPosts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(post => (
-                <GridItem key={post.slug} post={post} />
-              ))}
-            </div>
-
-            {/* Card View: Mobile (transitioned from grid OR selected) OR desktop card view */}
-            <div className={`${viewMode === 'card' ? 'flex' : 'hidden'} flex-col gap-4 md:gap-6 max-w-4xl mx-auto`}>
-              {filteredPosts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(post => (
-                <CardItem key={post.slug} post={post} />
-              ))}
-            </div>
-
-            {/* List View: Desktop OR Mobile (when explicitly selected) */}
-            {viewMode === 'list' && (
-              <div className="bg-white/5 rounded-2xl border border-white/10 overflow-hidden max-w-5xl mx-auto w-full">
+        {/* 게시글 영역 */}
+        {
+          isLoading ? (
+            <div className="p-20 text-center text-white/30 font-bold animate-pulse">Loading Study Notes...</div>
+          ) : filteredPosts.length > 0 ? (
+            <>
+              <Pagination className="mb-8" />
+              {/* Grid View: Desktop only */}
+              <div className={`${(viewMode === 'grid' && !isMobile) ? 'grid' : 'hidden'} md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6`}>
                 {filteredPosts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(post => (
-                  <ListItem key={post.slug} post={post} />
+                  <GridItem key={post.slug} post={post} />
                 ))}
               </div>
-            )}
 
-            {/* Bottom Pagination */}
-            <Pagination className="mt-12" />
-          </>
-        ) : (
-          <div className="p-20 text-center text-[#FFF2E0]/30 font-bold">등록된 공부 기록이 없습니다. (src/content/study/*.md)</div>
-        )
-      }
+              {/* Card View: Mobile (transitioned from grid OR selected) OR desktop card view */}
+              <div className={`${viewMode === 'card' ? 'flex' : 'hidden'} flex-col gap-4 md:gap-6 max-w-4xl mx-auto`}>
+                {filteredPosts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(post => (
+                  <CardItem key={post.slug} post={post} />
+                ))}
+              </div>
+
+              {/* List View: Desktop OR Mobile (when explicitly selected) */}
+              {viewMode === 'list' && (
+                <div className="bg-white/5 rounded-2xl border border-white/10 overflow-hidden max-w-5xl mx-auto w-full">
+                  {filteredPosts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(post => (
+                    <ListItem key={post.slug} post={post} />
+                  ))}
+                </div>
+              )}
+
+              {/* Bottom Pagination */}
+              <Pagination className="mt-12" />
+            </>
+          ) : (
+            <div className="p-20 text-center text-[#FFF2E0]/30 font-bold">등록된 공부 기록이 없습니다. (src/content/study/*.md)</div>
+          )
+        }
+      </div>
     </div >
   );
 }

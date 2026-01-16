@@ -332,16 +332,32 @@ export default function AnonymousBoard() {
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto p-4 md:p-10">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12 gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white">Community</h1>
-          <p className="text-white/60 text-sm mt-1">자유롭게 의견을 나누는 공간입니다.</p>
-        </div>
+    <div className="w-full">
+      {/* Hero Header Section - Full Width (Negative margin to close gap with fixed navbar) */}
+      <section className="relative w-full h-[220px] md:h-[320px] overflow-hidden -mt-[72px] md:-mt-[92px]">
+        <img
+          src="/assets/header_community.jpeg"
+          alt="Community Header"
+          className="w-full h-full object-cover brightness-[0.85] [mask-image:linear-gradient(to_bottom,black_90%,transparent_100%)]"
+        />
+        {/* Softened Gradient Overlay for depth and text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/10 to-transparent"></div>
 
-        <div className="flex items-center gap-3 self-end md:self-auto">
+        {/* Title Container - Constrained to match profile page width */}
+        <div className="absolute inset-0 flex items-end pb-16 md:pb-24">
+          <div className="max-w-7xl mx-auto px-4 w-full">
+            <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter [text-shadow:0_4px_12px_rgba(0,0,0,1),0_0_30px_rgba(0,0,0,0.8)]">
+              Community
+            </h1>
+          </div>
+        </div>
+      </section>
+
+      {/* Hero Action Bar - Controls */}
+      <div className="max-w-7xl mx-auto px-4 pt-8 -mb-4">
+        <div className="flex items-center justify-end gap-3">
           {/* 뷰 모드 스위처 - 모바일에서는 Card 하나뿐이라 숨김 */}
-          <div className="hidden md:flex bg-white/10 p-1 rounded-xl border border-white/10">
+          <div className="hidden md:flex bg-white/5 backdrop-blur-md h-[42px] items-center p-1 rounded-xl border border-white/10 shadow-xl">
             {[
               { id: 'grid', icon: <GridIcon /> },
               { id: 'card', icon: <CardIcon /> }
@@ -349,7 +365,7 @@ export default function AnonymousBoard() {
               <button
                 key={mode.id}
                 onClick={() => handleViewModeChange(mode.id)}
-                className={`px-3 py-1.5 rounded-lg transition-all flex items-center justify-center ${viewMode === mode.id ? 'bg-[#718eac] text-white' : 'text-white/50 hover:text-white'}`}
+                className={`px-3 h-[34px] rounded-lg transition-all flex items-center justify-center ${viewMode === mode.id ? 'bg-[#718eac] text-white' : 'text-white/50 hover:text-white'}`}
                 title={mode.id.toUpperCase()}
               >
                 {mode.icon}
@@ -357,153 +373,160 @@ export default function AnonymousBoard() {
             ))}
           </div>
 
-          <Button onClick={() => { setIsWriting(true); setEditingId(null); setTitle(""); setContent(""); }} className="px-6 py-2 text-sm md:text-base rounded-2xl shadow-lg h-[38px] flex items-center">
+          <Button
+            onClick={() => { setIsWriting(true); setEditingId(null); setTitle(""); setContent(""); }}
+            className="px-6 h-[42px] text-sm md:text-base rounded-2xl shadow-xl flex items-center bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 transition-all"
+          >
             글쓰기
           </Button>
         </div>
       </div>
 
-      <Pagination className="mb-8" />
+      {/* Main Content Areas */}
+      <div className="max-w-7xl mx-auto px-4 py-12">
 
-      {/* Desktop Grid View: Hidden on mobile OR when viewMode is 'card' */}
-      <div className={`${(viewMode === 'grid' && !isMobile) ? 'grid' : 'hidden'} md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6`}>
-        {posts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((post) => (
-          <GridItem
-            key={post.id}
-            post={post}
-            onSelect={setSelectedPost}
-          />
-        ))}
-      </div>
+        <Pagination className="mb-8" />
 
-      {/* Vertical Card View: Transitioned from grid OR selected card view */}
-      <div className={`${viewMode === 'card' ? 'flex' : 'hidden'} flex-col gap-4 md:gap-6 max-w-4xl mx-auto`}>
-        {posts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((post) => (
-          <CardItem
-            key={post.id}
-            post={post}
-            onSelect={setSelectedPost}
-          />
-        ))}
-      </div>
-
-      <Pagination className="mt-12" />
-
-      <Modal
-        isOpen={!!selectedPost}
-        onClose={() => setSelectedPost(null)}
-        title={selectedPost?.title}
-      >
-        <p className="text-sm md:text-base text-[#FFF2E0]/60 font-medium mb-6">
-          {selectedPost && new Date(selectedPost.created_at).toLocaleString([], { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
-        </p>
-        <p className="text-base md:text-lg text-[#FFF2E0] leading-relaxed whitespace-pre-wrap">
-          {selectedPost?.content?.replace(/(https?:\/\/[^\s]+)/g, '').trim()}
-        </p>
-
-        {/* 링크 프리뷰 추가 */}
-        {selectedPost?.content?.match(/(https?:\/\/[^\s]+)/g)?.map((url, i) => (
-          <LinkPreview key={i} url={url} />
-        ))}
-        <div className="mt-8 pt-6 border-t border-white/10 flex justify-end gap-3">
-          <Button variant="secondary" className="px-5 py-2 text-sm" onClick={() => handleActionWithPassword(selectedPost, "edit")}>수정</Button>
-          <Button variant="danger" className="px-5 py-2 text-sm" onClick={() => handleActionWithPassword(selectedPost, "delete")}>삭제</Button>
-        </div>
-      </Modal>
-
-      <Modal
-        isOpen={isWriting}
-        onClose={() => { setIsWriting(false); setEditingId(null); }}
-        title={editingId ? "Edit Post" : "New Post"}
-        maxWidth="max-w-xl"
-        zIndex="z-[100]"
-      >
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3 md:gap-4">
-          <Input placeholder="제목" value={title} onChange={(e) => setTitle(e.target.value)} required />
-          <Input placeholder="내용을 입력하세요" value={content} onChange={(e) => setContent(e.target.value)} isTextarea required />
-          <div className="flex gap-2 md:gap-4">
-            {!editingId && (
-              <div className="relative flex-1">
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="비밀번호"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="new-password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 transition-colors"
-                >
-                  {showPassword ? (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                  ) : (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                  )}
-                </button>
-              </div>
-            )}
-            {editingId ? (
-              <div className="flex gap-2 w-full">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="px-6 py-3 text-sm md:text-base flex-1"
-                  onClick={() => { setIsWriting(false); setEditingId(null); }}
-                >
-                  취소
-                </Button>
-                <Button type="submit" className="px-6 md:px-10 py-3 text-sm md:text-base flex-[2]">
-                  수정완료
-                </Button>
-              </div>
-            ) : (
-              <Button type="submit" className="px-6 md:px-10 py-3 text-sm md:text-base flex-none">
-                등록
-              </Button>
-            )}
-          </div>
-        </form>
-      </Modal>
-
-      <Modal
-        isOpen={pwdModal.isOpen}
-        onClose={() => setPwdModal({ isOpen: false, post: null, action: null, input: "" })}
-        title={pwdModal.action === "edit" ? "수정하시겠습니까?" : "삭제하시겠습니까?"}
-        maxWidth="max-w-sm"
-        zIndex="z-[150]"
-      >
-        <div className="flex flex-col gap-4">
-          <div className="relative">
-            <Input
-              type={showPwdModalPassword ? "text" : "password"}
-              autoFocus
-              value={pwdModal.input || ""}
-              onChange={(e) => setPwdModal({ ...pwdModal, input: e.target.value })}
-              placeholder="비밀번호를 입력하세요"
-              autoComplete="new-password"
-              onKeyDown={(e) => e.key === 'Enter' && confirmPassword(pwdModal.input)}
+        {/* Desktop Grid View: Hidden on mobile OR when viewMode is 'card' */}
+        <div className={`${(viewMode === 'grid' && !isMobile) ? 'grid' : 'hidden'} md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6`}>
+          {posts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((post) => (
+            <GridItem
+              key={post.id}
+              post={post}
+              onSelect={setSelectedPost}
             />
-            <button
-              type="button"
-              onClick={() => setShowPwdModalPassword(!showPwdModalPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 transition-colors"
-            >
-              {showPwdModalPassword ? (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-              ) : (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-              )}
-            </button>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="secondary" className="flex-1 py-2 text-sm" onClick={() => setPwdModal({ isOpen: false, post: null, action: null, input: "" })}>취소</Button>
-            <Button className="flex-1 py-2 text-sm" onClick={() => confirmPassword(pwdModal.input)}>확인</Button>
-          </div>
+          ))}
         </div>
-      </Modal>
+
+        {/* Vertical Card View: Transitioned from grid OR selected card view */}
+        <div className={`${viewMode === 'card' ? 'flex' : 'hidden'} flex-col gap-4 md:gap-6 max-w-4xl mx-auto`}>
+          {posts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((post) => (
+            <CardItem
+              key={post.id}
+              post={post}
+              onSelect={setSelectedPost}
+            />
+          ))}
+        </div>
+
+        <Pagination className="mt-12" />
+
+        <Modal
+          isOpen={!!selectedPost}
+          onClose={() => setSelectedPost(null)}
+          title={selectedPost?.title}
+        >
+          <p className="text-sm md:text-base text-[#FFF2E0]/60 font-medium mb-6">
+            {selectedPost && new Date(selectedPost.created_at).toLocaleString([], { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+          </p>
+          <p className="text-base md:text-lg text-[#FFF2E0] leading-relaxed whitespace-pre-wrap">
+            {selectedPost?.content?.replace(/(https?:\/\/[^\s]+)/g, '').trim()}
+          </p>
+
+          {/* 링크 프리뷰 추가 */}
+          {selectedPost?.content?.match(/(https?:\/\/[^\s]+)/g)?.map((url, i) => (
+            <LinkPreview key={i} url={url} />
+          ))}
+          <div className="mt-8 pt-6 border-t border-white/10 flex justify-end gap-3">
+            <Button variant="secondary" className="px-5 py-2 text-sm" onClick={() => handleActionWithPassword(selectedPost, "edit")}>수정</Button>
+            <Button variant="danger" className="px-5 py-2 text-sm" onClick={() => handleActionWithPassword(selectedPost, "delete")}>삭제</Button>
+          </div>
+        </Modal>
+
+        <Modal
+          isOpen={isWriting}
+          onClose={() => { setIsWriting(false); setEditingId(null); }}
+          title={editingId ? "Edit Post" : "New Post"}
+          maxWidth="max-w-xl"
+          zIndex="z-[100]"
+        >
+          <form onSubmit={handleSubmit} className="flex flex-col gap-3 md:gap-4">
+            <Input placeholder="제목" value={title} onChange={(e) => setTitle(e.target.value)} required />
+            <Input placeholder="내용을 입력하세요" value={content} onChange={(e) => setContent(e.target.value)} isTextarea required />
+            <div className="flex gap-2 md:gap-4">
+              {!editingId && (
+                <div className="relative flex-1">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="비밀번호"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="new-password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 transition-colors"
+                  >
+                    {showPassword ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    )}
+                  </button>
+                </div>
+              )}
+              {editingId ? (
+                <div className="flex gap-2 w-full">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="px-6 py-3 text-sm md:text-base flex-1"
+                    onClick={() => { setIsWriting(false); setEditingId(null); }}
+                  >
+                    취소
+                  </Button>
+                  <Button type="submit" className="px-6 md:px-10 py-3 text-sm md:text-base flex-[2]">
+                    수정완료
+                  </Button>
+                </div>
+              ) : (
+                <Button type="submit" className="px-6 md:px-10 py-3 text-sm md:text-base flex-none">
+                  등록
+                </Button>
+              )}
+            </div>
+          </form>
+        </Modal>
+
+        <Modal
+          isOpen={pwdModal.isOpen}
+          onClose={() => setPwdModal({ isOpen: false, post: null, action: null, input: "" })}
+          title={pwdModal.action === "edit" ? "수정하시겠습니까?" : "삭제하시겠습니까?"}
+          maxWidth="max-w-sm"
+          zIndex="z-[150]"
+        >
+          <div className="flex flex-col gap-4">
+            <div className="relative">
+              <Input
+                type={showPwdModalPassword ? "text" : "password"}
+                autoFocus
+                value={pwdModal.input || ""}
+                onChange={(e) => setPwdModal({ ...pwdModal, input: e.target.value })}
+                placeholder="비밀번호를 입력하세요"
+                autoComplete="new-password"
+                onKeyDown={(e) => e.key === 'Enter' && confirmPassword(pwdModal.input)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPwdModalPassword(!showPwdModalPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 transition-colors"
+              >
+                {showPwdModalPassword ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                )}
+              </button>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="secondary" className="flex-1 py-2 text-sm" onClick={() => setPwdModal({ isOpen: false, post: null, action: null, input: "" })}>취소</Button>
+              <Button className="flex-1 py-2 text-sm" onClick={() => confirmPassword(pwdModal.input)}>확인</Button>
+            </div>
+          </div>
+        </Modal>
+      </div>
     </div>
   );
 }
