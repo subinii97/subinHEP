@@ -56,7 +56,7 @@ Feynman diagrams are spacetime diagrams used to represent particle interactions.
 ### 2.2 Interaction Vertices
 Every interaction is constructed from fundamental 3-point vertices. Conservation laws (Charge, Lepton number, Baryon number) must be strictly obeyed.
 
-1.  **QED Vertex:** Charged fermion emits/absorbs a photon. Flavor is conserved ($e^- \to e^- + \gamma$).
+1.  **QED Vertex:** Charged fermion emits/absorbs a photon. Flavor is conserved $(e^- \to e^- + \gamma)$.
 2.  **QCD Vertex:** Quark emits/absorbs a gluon. Color changes ($u_{\text{red}} \to u_{\text{blue}} + g$).
 3.  **Weak Charged Current Vertex ($W^\pm$):**
     * **The only interaction that changes flavor.**

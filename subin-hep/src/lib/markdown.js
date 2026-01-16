@@ -1,22 +1,15 @@
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
-import { execSync } from 'child_process';
 
 const contentDirectory = path.join(process.cwd(), 'src/content/study');
 
-function getGitUpdateTime(filePath) {
+function getFileUpdateTime(filePath) {
     try {
         const stats = fs.statSync(filePath);
-        // If the file is not tracked by git or git is not available, use mtime as fallback
-        const gitTime = execSync(`git log -1 --format=%ai -- "${filePath}"`, { encoding: 'utf8' }).trim();
-        if (gitTime) {
-            const date = new Date(gitTime);
-            return date.toISOString();
-        }
         return stats.mtime.toISOString();
     } catch (error) {
-        console.error(`Failed to get git update time for ${filePath}:`, error);
+        console.error(`Failed to get file update time for ${filePath}:`, error);
         return new Date().toISOString();
     }
 }
@@ -45,7 +38,7 @@ export function getAllStudyPosts() {
             const fullPath = path.join(contentDirectory, fileName);
             const fileContents = fs.readFileSync(fullPath, 'utf8');
             const { data, content } = matter(fileContents);
-            const updatedAtIso = getGitUpdateTime(fullPath);
+            const updatedAtIso = getFileUpdateTime(fullPath);
 
             return {
                 slug,
@@ -67,7 +60,7 @@ export function getStudyPostBySlug(slug) {
 
     const fileContents = fs.readFileSync(fullPath, 'utf8');
     const { data, content } = matter(fileContents);
-    const updatedAtIso = getGitUpdateTime(fullPath);
+    const updatedAtIso = getFileUpdateTime(fullPath);
 
     return {
         slug,
