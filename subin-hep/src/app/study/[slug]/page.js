@@ -135,6 +135,15 @@ export default function StudyPostPage({ params: paramsPromise }) {
                             </ReactMarkdown>
                         </div>
                     </article>
+
+                    <div className="mt-8 flex justify-center">
+                        <Link
+                            href="/study"
+                            className="inline-flex items-center text-[#FFF2E0]/60 hover:text-white transition-colors text-sm md:text-base"
+                        >
+                            ← Back to Study Board
+                        </Link>
+                    </div>
                 </div>
 
                 {/* Sticky TOC */}

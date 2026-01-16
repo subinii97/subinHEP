@@ -47,11 +47,19 @@ export function getAllStudyPosts() {
                 // Ensure date is a string for serialization
                 created_at: data.date ? new Date(data.date).toISOString() : new Date().toISOString(),
                 updated_at: formatUpdateTime(updatedAtIso),
+                updated_at_iso: updatedAtIso, // mapping temporary property for sorting
             };
         });
 
-    // Sort posts by date
-    return allPostsData.sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+    // Sort posts: primary by created_at (desc), secondary by updated_at_iso (desc)
+    return allPostsData
+        .sort((a, b) => {
+            if (a.created_at !== b.created_at) {
+                return a.created_at < b.created_at ? 1 : -1;
+            }
+            return a.updated_at_iso < b.updated_at_iso ? 1 : -1;
+        })
+        .map(({ updated_at_iso, ...post }) => post);
 }
 
 export function getStudyPostBySlug(slug) {

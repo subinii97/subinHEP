@@ -1,6 +1,7 @@
 ---
 title: HEP - Lecture 01. Introduction to the Standard Model
 date: 2026-01-16
+category: PP Study
 ---
 
 # Lecture Note 01: Introduction to the Standard Model

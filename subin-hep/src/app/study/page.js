@@ -49,12 +49,22 @@ function stripMarkdown(text) {
 // 1. Grid View Item (갤러리 스타일)
 function GridItem({ post }) {
   const plainText = stripMarkdown(post.content);
+  const isPaper = post.category === "Paper Reading";
+  const categoryColor = isPaper ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" : "bg-blue-500/20 text-blue-300 border-blue-500/30";
+
   return (
     <Link
       href={`/study/${post.slug}`}
       className="group relative p-4 md:p-6 bg-white/10 backdrop-blur-sm rounded-[1.5rem] md:rounded-[2rem] border border-white/20 hover:bg-white/20 transition-all cursor-pointer h-40 md:h-64 flex flex-col justify-between"
     >
       <div className="overflow-hidden">
+        {post.category && (
+          <div className="mb-2">
+            <span className={`text-[10px] px-2 py-0.5 rounded-full border ${categoryColor} shrink-0`}>
+              {post.category}
+            </span>
+          </div>
+        )}
         <h3 className="text-sm md:text-xl font-bold text-white mb-1 truncate">{post.title}</h3>
         <span className="text-sm text-white/70 block mb-3 font-medium">
           {new Date(post.created_at).toLocaleString([], { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
@@ -63,9 +73,6 @@ function GridItem({ post }) {
           {plainText}
         </p>
       </div>
-      <div className="flex justify-end mt-2">
-        {/* Read More removed */}
-      </div>
     </Link>
   );
 }
@@ -73,16 +80,26 @@ function GridItem({ post }) {
 // 2. Card View Item (세로 나열형, 2줄 요약)
 function CardItem({ post }) {
   const plainText = stripMarkdown(post.content);
+  const isPaper = post.category === "Paper Reading";
+  const categoryColor = isPaper ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" : "bg-blue-500/20 text-blue-300 border-blue-500/30";
+
   return (
     <Link
       href={`/study/${post.slug}`}
       className="group p-4 md:p-6 bg-white/10 backdrop-blur-sm rounded-3xl border border-white/20 hover:bg-white/15 transition-all cursor-pointer flex flex-col gap-3"
     >
-      <div className="space-y-1">
-        <h1 className="text-lg md:text-2xl font-bold text-white group-hover:text-white transition-colors">{post.title}</h1>
-        <span className="text-[11px] md:text-sm text-white/70 block font-medium">
-          {new Date(post.created_at).toLocaleString([], { year: 'numeric', month: '2-digit', day: '2-digit' })}
-        </span>
+      <div className="flex justify-between items-start gap-4">
+        <div className="space-y-1 min-w-0 flex-1">
+          <h1 className="text-lg md:text-2xl font-bold text-white group-hover:text-white transition-colors leading-tight">{post.title}</h1>
+          <span className="text-[11px] md:text-sm text-white/70 block font-medium">
+            {new Date(post.created_at).toLocaleString([], { year: 'numeric', month: '2-digit', day: '2-digit' })}
+          </span>
+        </div>
+        {post.category && (
+          <span className={`text-xs px-3 py-1 rounded-full border ${categoryColor} whitespace-nowrap shrink-0 mt-1`}>
+            {post.category}
+          </span>
+        )}
       </div>
       <p className="text-white/80 line-clamp-2 text-sm md:text-base leading-relaxed">
         {plainText}
@@ -93,12 +110,20 @@ function CardItem({ post }) {
 
 // 3. List View Item (심플 리스트)
 function ListItem({ post }) {
+  const categoryColor = post.category === "Paper Reading" ? "text-emerald-400" : "text-blue-400";
   return (
     <Link
       href={`/study/${post.slug}`}
       className="group px-4 py-3 md:px-6 md:py-4 bg-white/5 hover:bg-white/10 border-b border-white/5 first:rounded-t-2xl last:rounded-b-2xl last:border-none transition-all cursor-pointer flex justify-between items-center gap-4"
     >
-      <h3 className="text-sm md:text-base font-bold text-white truncate flex-1 group-hover:text-white transition-colors">{post.title}</h3>
+      <div className="flex items-center gap-3 flex-1 min-w-0">
+        <h3 className="text-sm md:text-base font-bold text-white truncate group-hover:text-white transition-colors">{post.title}</h3>
+        {post.category && (
+          <span className={`text-[10px] uppercase tracking-wider font-bold ${categoryColor} shrink-0`}>
+            {post.category}
+          </span>
+        )}
+      </div>
       <div className="flex items-center gap-6">
         <span className="text-[10px] md:text-sm text-white/70 font-mono">
           {new Date(post.created_at).toLocaleDateString()}
@@ -115,6 +140,9 @@ export default function StudyPage() {
   const [desktopViewPreference, setDesktopViewPreference] = useState("grid"); // 기억해둔 선호도
   const [isMobile, setIsMobile] = useState(false);
   const [isLargeScreen, setIsLargeScreen] = useState(false); // 1024px 이상 여부
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
+  const categories = ["All", "PP Study", "Paper Reading"];
 
   useEffect(() => {
     // 초기 모바일/화면 크기 확인 및 리스너 등록
@@ -155,10 +183,14 @@ export default function StudyPage() {
     setCurrentPage(1);
   }, [viewMode]);
 
-  const totalPages = Math.ceil(posts.length / itemsPerPage);
+  const filteredPosts = selectedCategory === "All"
+    ? posts
+    : posts.filter(post => post.category === selectedCategory);
+
+  const totalPages = Math.ceil(filteredPosts.length / itemsPerPage);
 
   const Pagination = ({ className = "" }) => (
-    posts.length > itemsPerPage ? (
+    filteredPosts.length > itemsPerPage ? (
       <div className={`flex justify-center items-center gap-4 ${className}`}>
         <button
           disabled={currentPage === 1}
@@ -232,41 +264,59 @@ export default function StudyPage() {
         </div>
       </div>
 
+      {/* 카테고리 탭 */}
+      <div className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-hide">
+        {categories.map(category => (
+          <button
+            key={category}
+            onClick={() => setSelectedCategory(category)}
+            className={`px-5 py-2 rounded-2xl transition-all whitespace-nowrap border ${selectedCategory === category
+              ? 'bg-white/20 border-white/40 text-white shadow-[0_0_20px_rgba(255,255,255,0.1)]'
+              : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white'
+              }`}
+          >
+            {category}
+          </button>
+        ))}
+      </div>
+
       {/* 게시글 영역 */}
-      {isLoading ? (
-        <div className="p-20 text-center text-white/30 font-bold animate-pulse">Loading Study Notes...</div>
-      ) : posts.length > 0 ? (
-        <>
-          <Pagination className="mb-8" />
-          {/* Grid View: Desktop only */}
-          <div className={`${(viewMode === 'grid' && !isMobile) ? 'grid' : 'hidden'} md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6`}>
-            {posts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(post => (
-              <GridItem key={post.slug} post={post} />
-            ))}
-          </div>
-
-          {/* Card View: Mobile (transitioned from grid OR selected) OR desktop card view */}
-          <div className={`${viewMode === 'card' ? 'flex' : 'hidden'} flex-col gap-4 md:gap-6 max-w-4xl mx-auto`}>
-            {posts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(post => (
-              <CardItem key={post.slug} post={post} />
-            ))}
-          </div>
-
-          {/* List View: Desktop OR Mobile (when explicitly selected) */}
-          {viewMode === 'list' && (
-            <div className="bg-white/5 rounded-2xl border border-white/10 overflow-hidden max-w-5xl mx-auto w-full">
-              {posts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(post => (
-                <ListItem key={post.slug} post={post} />
+      {
+        isLoading ? (
+          <div className="p-20 text-center text-white/30 font-bold animate-pulse">Loading Study Notes...</div>
+        ) : filteredPosts.length > 0 ? (
+          <>
+            <Pagination className="mb-8" />
+            {/* Grid View: Desktop only */}
+            <div className={`${(viewMode === 'grid' && !isMobile) ? 'grid' : 'hidden'} md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6`}>
+              {filteredPosts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(post => (
+                <GridItem key={post.slug} post={post} />
               ))}
             </div>
-          )}
 
-          {/* Bottom Pagination */}
-          <Pagination className="mt-12" />
-        </>
-      ) : (
-        <div className="p-20 text-center text-[#FFF2E0]/30 font-bold">등록된 공부 기록이 없습니다. (src/content/study/*.md)</div>
-      )}
-    </div>
+            {/* Card View: Mobile (transitioned from grid OR selected) OR desktop card view */}
+            <div className={`${viewMode === 'card' ? 'flex' : 'hidden'} flex-col gap-4 md:gap-6 max-w-4xl mx-auto`}>
+              {filteredPosts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(post => (
+                <CardItem key={post.slug} post={post} />
+              ))}
+            </div>
+
+            {/* List View: Desktop OR Mobile (when explicitly selected) */}
+            {viewMode === 'list' && (
+              <div className="bg-white/5 rounded-2xl border border-white/10 overflow-hidden max-w-5xl mx-auto w-full">
+                {filteredPosts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(post => (
+                  <ListItem key={post.slug} post={post} />
+                ))}
+              </div>
+            )}
+
+            {/* Bottom Pagination */}
+            <Pagination className="mt-12" />
+          </>
+        ) : (
+          <div className="p-20 text-center text-[#FFF2E0]/30 font-bold">등록된 공부 기록이 없습니다. (src/content/study/*.md)</div>
+        )
+      }
+    </div >
   );
 }

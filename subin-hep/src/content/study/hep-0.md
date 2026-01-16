@@ -1,6 +1,7 @@
 ---
 title: HEP - Introduction & Syllabus
 date: 2026-01-16
+category: PP Study
 ---
 
 # Course Syllabus: Foundations of Modern Particle Physics

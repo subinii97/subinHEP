@@ -46,3 +46,12 @@ body {
   background-size: 300% 300%;
   animation: gradient-move 60s ease infinite;
 }
+
+/* KaTeX Math Equations */
+.katex {
+  color: white !important;
+}
+
+.katex-display {
+  color: white !important;
+}
