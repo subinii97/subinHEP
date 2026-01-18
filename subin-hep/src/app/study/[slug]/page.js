@@ -79,7 +79,7 @@ export default function StudyPostPage({ params: paramsPromise }) {
                 <div className="flex-1 min-w-0">
                     <article className="bg-white/10 backdrop-blur-md rounded-[2rem] md:rounded-[3rem] p-6 md:p-12 border border-white/20">
                         <header className="mb-8 md:mb-12 border-b border-white/10 pb-8 md:pb-12 text-center">
-                            <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6 tracking-tight">
+                            <h2 className="text-2xl md:text-4xl font-extrabold text-white mb-6 tracking-tight">
                                 {post.title}
                             </h2>
                             <div className="flex flex-col items-center gap-2">
@@ -100,6 +100,8 @@ export default function StudyPostPage({ params: paramsPromise }) {
 
                         <div className="prose prose-invert prose-slate max-w-none text-base md:text-lg
           prose-headings:text-white prose-headings:font-bold prose-headings:scroll-mt-28
+          prose-h1:text-2xl md:prose-h1:text-3xl
+          prose-h2:text-xl md:prose-h2:text-2xl
           prose-p:text-white prose-p:leading-relaxed
           prose-strong:text-white prose-strong:font-bold
           prose-ul:text-white prose-li:text-white

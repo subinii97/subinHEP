@@ -30,7 +30,7 @@ function PhDBoardContent() {
     const [showAppForm, setShowAppForm] = useState(false);
     const [newApp, setNewApp] = useState({
         university: "",
-        status: "Considering",
+        status: "In preparation",
         deadline: "",
         submit_date: "",
         interview_date: "",
@@ -87,7 +87,7 @@ function PhDBoardContent() {
         }
     };
 
-    const formatDateWithTimezone = (dateString, timezoneValue) => {
+    const formatDateWithTimezone = (dateString, timezoneValue, includeTime = true) => {
         if (!dateString) return '-';
         const d = new Date(dateString);
         const getBase = (dt) => {
@@ -96,7 +96,8 @@ function PhDBoardContent() {
             const day = String(dt.getDate()).padStart(2, '0');
             const hh = String(dt.getHours()).padStart(2, '0');
             const minmin = String(dt.getMinutes()).padStart(2, '0');
-            return `${y}.${m}.${day} ${hh}:${minmin}`;
+            const timePart = includeTime ? ` ${hh}:${minmin}` : '';
+            return `${m}/${day}/${y}${timePart}`;
         };
 
         if (!timezoneValue || timezoneValue === 'Local') return getBase(d);
@@ -104,7 +105,8 @@ function PhDBoardContent() {
         const isoMatch = str.match(/(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:[T\s](\d{1,2}):(\d{2}))?/);
         if (isoMatch) {
             const [_, y, mm, dd, h, m] = isoMatch;
-            return `${y}.${mm.padStart(2, '0')}.${dd.padStart(2, '0')} ${(h || '00').padStart(2, '0')}:${(m || '00').padStart(2, '0')} (${timezoneValue})`;
+            const timePart = includeTime ? ` ${(h || '00').padStart(2, '0')}:${(m || '00').padStart(2, '0')}` : '';
+            return `${mm.padStart(2, '0')}/${dd.padStart(2, '0')}/${y}${timePart} (${timezoneValue})`;
         }
         return str + ` (${timezoneValue})`;
     };
@@ -217,7 +219,7 @@ function PhDBoardContent() {
             const { error } = await supabase.from("phd_applications").update(payload).eq("id", editingApp.id);
             if (!error) {
                 setShowAppForm(false);
-                setNewApp({ university: "", status: "In Progress", deadline: "", submit_date: "", interview_date: "", notes: "", timezone: "Local" });
+                setNewApp({ university: "", status: "In preparation", deadline: "", submit_date: "", interview_date: "", notes: "", timezone: "Local" });
                 setEditingApp(null);
                 fetchApps();
             }
@@ -225,7 +227,7 @@ function PhDBoardContent() {
             const { error } = await supabase.from("phd_applications").insert([payload]);
             if (!error) {
                 setShowAppForm(false);
-                setNewApp({ university: "", status: "In Progress", deadline: "", submit_date: "", interview_date: "", notes: "", timezone: "Local" });
+                setNewApp({ university: "", status: "In preparation", deadline: "", submit_date: "", interview_date: "", notes: "", timezone: "Local" });
                 fetchApps();
             }
         }
@@ -298,7 +300,7 @@ function PhDBoardContent() {
                         setShowAppForm(true);
                         setEditingApp(null);
                         const nowISO = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-                        setNewApp({ university: "", status: "Considering", deadline: nowISO, submit_date: "", interview_date: "", decision_date: "", notes: "", timezone: "Local" });
+                        setNewApp({ university: "", status: "In preparation", deadline: nowISO, submit_date: "", interview_date: "", decision_date: "", notes: "", timezone: "Local" });
                     }} className="px-6 py-2 bg-white/10 backdrop-blur-md border border-white/20 hover:border-white/40 rounded-2xl text-white font-bold shadow-xl transition-all hover:scale-105 flex items-center gap-1 group whitespace-nowrap">
                         <span className="text-xl font-bold text-white/80">+</span>
                         New Program
@@ -332,7 +334,7 @@ function PhDBoardContent() {
                                         className="w-full px-8 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:border-purple-500 transition-all text-left font-bold flex items-center justify-between"
                                     >
                                         <span className={
-                                            newApp.status === 'Considering' ? 'text-yellow-400' :
+                                            newApp.status === 'In preparation' ? 'text-yellow-400' :
                                                 newApp.status === 'Submitted' ? 'text-blue-400' :
                                                     newApp.status === 'Interview' ? 'text-purple-400' :
                                                         newApp.status === 'Accepted' ? 'text-green-400' :
@@ -347,7 +349,7 @@ function PhDBoardContent() {
                                     {showStatusDropdown && (
                                         <div className="absolute top-full left-0 w-full mt-2 bg-[#1a1a1a]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-[100] overflow-hidden">
                                             {[
-                                                { label: 'Considering', color: 'text-yellow-400' },
+                                                { label: 'In preparation', color: 'text-yellow-400' },
                                                 { label: 'Submitted', color: 'text-blue-400' },
                                                 { label: 'Interview', color: 'text-purple-400' },
                                                 { label: 'Accepted', color: 'text-green-400' },
@@ -473,23 +475,23 @@ function PhDBoardContent() {
                                         {app.decision_date && (
                                             <div className={`flex flex-col items-center ${app.status === 'Rejected' ? 'text-glow-red' : 'text-glow-green'}`}>
                                                 <span className={`${app.status === 'Rejected' ? 'text-red-400/80' : 'text-green-400/80'} text-[9px] font-black uppercase tracking-widest mb-0.5`}>Decision Recorded</span>
-                                                <span className="text-white font-mono font-bold text-base">{formatDateWithTimezone(app.decision_date, 'KST').split(' (')[0]}</span>
+                                                <span className="text-white font-mono font-bold text-base">{formatDateWithTimezone(app.decision_date, 'KST', false).split(' (')[0]}</span>
                                             </div>
                                         )}
                                         {app.interview_date && (
                                             <div className={`flex flex-col items-center ${app.decision_date ? 'pt-3 border-t border-white/10 w-full' : ''} text-glow-purple`}>
                                                 <span className="text-purple-400/80 text-[9px] font-black uppercase tracking-widest mb-0.5">Interview Recorded</span>
-                                                <span className="text-white font-mono font-bold text-base">{formatDateWithTimezone(app.interview_date, 'KST').split(' (')[0]}</span>
+                                                <span className="text-white font-mono font-bold text-base">{formatDateWithTimezone(app.interview_date, 'KST', false).split(' (')[0]}</span>
                                             </div>
                                         )}
                                         <div className={`flex flex-col items-center ${(app.decision_date || app.interview_date) ? 'pt-3 border-t border-white/10 w-full' : ''}`}>
                                             <span className="text-white/80 text-[9px] font-black uppercase tracking-widest mb-0.5">Program Deadline</span>
-                                            <span className="text-white font-mono font-bold text-base">{formatDateWithTimezone(app.deadline, app.timezone)}</span>
+                                            <span className="text-white font-mono font-bold text-base">{formatDateWithTimezone(app.deadline, app.timezone, false)}</span>
                                         </div>
                                         {app.submit_date && (
                                             <div className="flex flex-col items-center pt-3 border-t border-white/10 w-full text-glow-blue">
                                                 <span className="text-blue-400/80 text-[9px] font-black uppercase tracking-widest mb-0.5">Submission Recorded</span>
-                                                <span className="text-white font-mono font-bold text-base">{formatDateWithTimezone(app.submit_date, 'KST').split(' (')[0]}</span>
+                                                <span className="text-white font-mono font-bold text-base">{formatDateWithTimezone(app.submit_date, 'KST', false).split(' (')[0]}</span>
                                             </div>
                                         )}
                                     </div>

@@ -67,7 +67,7 @@ function GridItem({ post }) {
         )}
         <h3 className="text-sm md:text-xl font-bold text-white mb-1 truncate">{post.title}</h3>
         <span className="text-sm text-white/70 block mb-3 font-medium">
-          {new Date(post.created_at).toLocaleString([], { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+          {new Date(post.created_at).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}
         </span>
         <p className="text-white/80 line-clamp-2 md:line-clamp-3 text-xs md:text-base leading-relaxed">
           {plainText}
@@ -90,9 +90,9 @@ function CardItem({ post }) {
     >
       <div className="flex justify-between items-start gap-4">
         <div className="space-y-1 min-w-0 flex-1">
-          <h1 className="text-lg md:text-2xl font-bold text-white group-hover:text-white transition-colors leading-tight">{post.title}</h1>
+          <h3 className="text-base md:text-xl font-bold text-white group-hover:text-white transition-colors leading-tight">{post.title}</h3>
           <span className="text-[11px] md:text-sm text-white/70 block font-medium">
-            {new Date(post.created_at).toLocaleString([], { year: 'numeric', month: '2-digit', day: '2-digit' })}
+            {new Date(post.created_at).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}
           </span>
         </div>
         {post.category && (
@@ -126,7 +126,7 @@ function ListItem({ post }) {
       </div>
       <div className="flex items-center gap-6">
         <span className="text-[10px] md:text-sm text-white/70 font-mono">
-          {new Date(post.created_at).toLocaleDateString()}
+          {new Date(post.created_at).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}
         </span>
       </div>
     </Link>
@@ -249,7 +249,7 @@ export default function StudyPage() {
         {/* Title Container - Constrained to match profile page width */}
         <div className="absolute inset-0 flex items-end pb-16 md:pb-24">
           <div className="max-w-7xl mx-auto px-4 w-full">
-            <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter [text-shadow:0_4px_12px_rgba(0,0,0,1),0_0_30px_rgba(0,0,0,0.8)]">
+            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tighter [text-shadow:0_4px_12px_rgba(0,0,0,1),0_0_30px_rgba(0,0,0,0.8)]">
               Study Board
             </h1>
           </div>

@@ -17,7 +17,7 @@ export default function InternalPage() {
 
     // Forms
     const [showAppForm, setShowAppForm] = useState(false);
-    const [newApp, setNewApp] = useState({ university: "", status: "Considering", deadline: "", notes: "", timezone: "Local" });
+    const [newApp, setNewApp] = useState({ university: "", status: "In preparation", deadline: "", notes: "", timezone: "Local" });
     const [editingApp, setEditingApp] = useState(null); // 수정 중인 박사 지원 정보
     const [selectedApp, setSelectedApp] = useState(null); // 상세 보기 중인 박사 지원 정보
     const [showScheduleForm, setShowScheduleForm] = useState(false);
@@ -233,7 +233,7 @@ export default function InternalPage() {
 
             if (!error) {
                 setShowAppForm(false);
-                setNewApp({ university: "", status: "Considering", deadline: "", notes: "", timezone: "Local" });
+                setNewApp({ university: "", status: "In preparation", deadline: "", notes: "", timezone: "Local" });
                 setEditingApp(null);
                 fetchData();
             }
@@ -241,7 +241,7 @@ export default function InternalPage() {
             const { error } = await supabase.from("phd_applications").insert([payload]);
             if (!error) {
                 setShowAppForm(false);
-                setNewApp({ university: "", status: "Considering", deadline: "", notes: "", timezone: "Local" });
+                setNewApp({ university: "", status: "In preparation", deadline: "", notes: "", timezone: "Local" });
                 fetchData();
             }
         }
@@ -402,7 +402,7 @@ export default function InternalPage() {
                         📅
                     </div>
                     <div>
-                        <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">Schedule & Calendar</h2>
+                        <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">Calendar</h2>
                         <p className="text-white/40 leading-relaxed font-medium">View events in a dedicated calendar view and manage research milestones, meetings, and deadlines.</p>
                     </div>
                     <div className="pt-4">
