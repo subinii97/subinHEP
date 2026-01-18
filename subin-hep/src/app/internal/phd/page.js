@@ -69,8 +69,17 @@ function PhDBoardContent() {
     const fetchApps = async () => {
         setLoading(true);
         try {
-            const { data } = await supabase.from("phd_applications").select("*").order("deadline", { ascending: false });
-            setApps(data || []);
+            const { data } = await supabase.from("phd_applications").select("*");
+
+            // Sort: High priority to Decision Date (if exists) or Deadline (if no decision)
+            // Show the most "recent" activity (decision or upcoming deadline) at the top
+            const sortedData = (data || []).sort((a, b) => {
+                const dateA = a.decision_date ? new Date(a.decision_date) : new Date(a.deadline);
+                const dateB = b.decision_date ? new Date(b.decision_date) : new Date(b.deadline);
+                return dateB - dateA;
+            });
+
+            setApps(sortedData);
         } catch (err) {
             console.error("Error fetching apps:", err);
         } finally {
@@ -441,7 +450,7 @@ function PhDBoardContent() {
                         <tr className="border-b border-white/40 bg-white/5">
                             <th className="px-8 py-4 text-white/80 text-[11px] font-black uppercase tracking-widest border-r border-white/40 text-center">University / Program</th>
                             <th className="px-8 py-4 text-white/80 text-[11px] font-black uppercase tracking-widest border-r border-white/40 text-center">Status</th>
-                            <th className="px-8 py-4 text-white/80 text-[11px] font-black uppercase tracking-widest border-r border-white/40 text-center">Dates (KST)</th>
+                            <th className="px-8 py-4 text-white/80 text-[11px] font-black uppercase tracking-widest border-r border-white/40 text-center">Dates</th>
                             <th className="px-8 py-4 text-white/80 text-[11px] font-black uppercase tracking-widest text-center">Notes</th>
                         </tr>
                     </thead>
@@ -460,27 +469,27 @@ function PhDBoardContent() {
                                     </div>
                                 </td>
                                 <td className="px-8 py-5 border-r border-white/40 text-center min-w-[250px]">
-                                    <div className="space-y-1">
-                                        <div className="flex flex-col items-center">
-                                            <span className="text-white/80 text-[9px] font-black uppercase tracking-widest mb-0.5">Program Deadline</span>
-                                            <span className="text-white font-mono font-bold text-base">{formatDateWithTimezone(app.deadline, 'KST').split(' (')[0]}</span>
-                                        </div>
-                                        {app.submit_date && (
-                                            <div className="flex flex-col items-center pt-2 border-t border-white/10 mt-2 text-glow-blue">
-                                                <span className="text-blue-400/80 text-[9px] font-black uppercase tracking-widest mb-0.5">Submission Recorded</span>
-                                                <span className="text-white font-mono font-bold text-base">{formatDateWithTimezone(app.submit_date, 'KST').split(' (')[0]}</span>
+                                    <div className="flex flex-col items-center gap-3">
+                                        {app.decision_date && (
+                                            <div className={`flex flex-col items-center ${app.status === 'Rejected' ? 'text-glow-red' : 'text-glow-green'}`}>
+                                                <span className={`${app.status === 'Rejected' ? 'text-red-400/80' : 'text-green-400/80'} text-[9px] font-black uppercase tracking-widest mb-0.5`}>Decision Recorded</span>
+                                                <span className="text-white font-mono font-bold text-base">{formatDateWithTimezone(app.decision_date, 'KST').split(' (')[0]}</span>
                                             </div>
                                         )}
                                         {app.interview_date && (
-                                            <div className="flex flex-col items-center pt-2 border-t border-white/10 mt-2 text-glow-purple">
+                                            <div className={`flex flex-col items-center ${app.decision_date ? 'pt-3 border-t border-white/10 w-full' : ''} text-glow-purple`}>
                                                 <span className="text-purple-400/80 text-[9px] font-black uppercase tracking-widest mb-0.5">Interview Recorded</span>
                                                 <span className="text-white font-mono font-bold text-base">{formatDateWithTimezone(app.interview_date, 'KST').split(' (')[0]}</span>
                                             </div>
                                         )}
-                                        {app.decision_date && (
-                                            <div className={`flex flex-col items-center pt-2 border-t border-white/10 mt-2 ${app.status === 'Rejected' ? 'text-glow-red' : 'text-glow-green'}`}>
-                                                <span className={`${app.status === 'Rejected' ? 'text-red-400/80' : 'text-green-400/80'} text-[9px] font-black uppercase tracking-widest mb-0.5`}>Decision Recorded</span>
-                                                <span className="text-white font-mono font-bold text-base">{formatDateWithTimezone(app.decision_date, 'KST').split(' (')[0]}</span>
+                                        <div className={`flex flex-col items-center ${(app.decision_date || app.interview_date) ? 'pt-3 border-t border-white/10 w-full' : ''}`}>
+                                            <span className="text-white/80 text-[9px] font-black uppercase tracking-widest mb-0.5">Program Deadline</span>
+                                            <span className="text-white font-mono font-bold text-base">{formatDateWithTimezone(app.deadline, app.timezone)}</span>
+                                        </div>
+                                        {app.submit_date && (
+                                            <div className="flex flex-col items-center pt-3 border-t border-white/10 w-full text-glow-blue">
+                                                <span className="text-blue-400/80 text-[9px] font-black uppercase tracking-widest mb-0.5">Submission Recorded</span>
+                                                <span className="text-white font-mono font-bold text-base">{formatDateWithTimezone(app.submit_date, 'KST').split(' (')[0]}</span>
                                             </div>
                                         )}
                                     </div>
@@ -521,18 +530,11 @@ function PhDBoardContent() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                             <div className="space-y-6">
-                                <div className="space-y-2">
-                                    <label className="text-white/80 text-[10px] font-black uppercase tracking-widest block ml-2">Program Deadline</label>
-                                    <div className="px-6 py-4 bg-white/5 rounded-xl border border-white/10 text-white font-mono text-lg font-bold">
-                                        {formatDateWithTimezone(selectedApp.deadline, selectedApp.timezone)}
-                                    </div>
-                                </div>
-
-                                {selectedApp.submit_date && (
+                                {selectedApp.decision_date && (
                                     <div className="space-y-2">
-                                        <label className="text-blue-400/80 text-[10px] font-black uppercase tracking-widest block ml-2 text-glow-blue">Submission Recorded</label>
+                                        <label className={`${selectedApp.status === 'Rejected' ? 'text-red-400/80 text-glow-red' : 'text-green-400/80 text-glow-green'} text-[10px] font-black uppercase tracking-widest block ml-2`}>Decision Recorded</label>
                                         <div className="px-6 py-4 bg-white/5 rounded-xl border border-white/10 text-white font-mono text-lg font-bold">
-                                            {formatDateWithTimezone(selectedApp.submit_date, 'Local')}
+                                            {formatDateWithTimezone(selectedApp.decision_date, 'Local')}
                                         </div>
                                     </div>
                                 )}
@@ -546,11 +548,18 @@ function PhDBoardContent() {
                                     </div>
                                 )}
 
-                                {selectedApp.decision_date && (
+                                <div className="space-y-2">
+                                    <label className="text-white/80 text-[10px] font-black uppercase tracking-widest block ml-2">Program Deadline</label>
+                                    <div className="px-6 py-4 bg-white/5 rounded-xl border border-white/10 text-white font-mono text-lg font-bold">
+                                        {formatDateWithTimezone(selectedApp.deadline, selectedApp.timezone)}
+                                    </div>
+                                </div>
+
+                                {selectedApp.submit_date && (
                                     <div className="space-y-2">
-                                        <label className={`${selectedApp.status === 'Rejected' ? 'text-red-400/80 text-glow-red' : 'text-green-400/80 text-glow-green'} text-[10px] font-black uppercase tracking-widest block ml-2`}>Decision Recorded</label>
+                                        <label className="text-blue-400/80 text-[10px] font-black uppercase tracking-widest block ml-2 text-glow-blue">Submission Recorded</label>
                                         <div className="px-6 py-4 bg-white/5 rounded-xl border border-white/10 text-white font-mono text-lg font-bold">
-                                            {formatDateWithTimezone(selectedApp.decision_date, 'Local')}
+                                            {formatDateWithTimezone(selectedApp.submit_date, 'Local')}
                                         </div>
                                     </div>
                                 )}
