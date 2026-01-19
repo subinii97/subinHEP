@@ -216,10 +216,10 @@ export default function ProfilePage() {
                   <div className="p-6 bg-white/5 rounded-3xl border border-white/10 hover:bg-white/10 transition-all group">
                     <div className="flex justify-between items-start mb-1 min-[550px]:mb-2">
                       <h4 className="font-bold text-lg text-white">Elementary Particle Physics Lab., HYU</h4>
-                      <span className="hidden min-[550px]:block text-sm text-white/50 tabular-nums whitespace-nowrap ml-4">2019 - 2022</span>
+                      <span className="hidden min-[550px]:block text-sm text-white/50 tabular-nums whitespace-nowrap ml-4">2018 - 2022</span>
                     </div>
                     <div className="flex justify-between items-center mb-1">
-                      <p className="text-white/80 text-base font-medium">Researcher</p>
+                      <p className="text-white/80 text-base font-medium">Undergraduate Researcher, Researcher</p>
                       <span className="block min-[550px]:hidden text-sm text-white/50 tabular-nums">2019 - 2022</span>
                     </div>
                     <ul className="text-white/80 text-base space-y-2 list-disc pl-5">

@@ -15,6 +15,7 @@ function PhDBoardContent() {
     const [showStatusDropdown, setShowStatusDropdown] = useState(false);
     const [showTimezoneDropdown, setShowTimezoneDropdown] = useState(false);
     const [filterYear, setFilterYear] = useState('All');
+    const [filterStatus, setFilterStatus] = useState('All');
 
     const searchParams = useSearchParams();
     const appIdFromUrl = searchParams.get('id');
@@ -141,7 +142,7 @@ function PhDBoardContent() {
             // Full timestamp with time
             const now = new Date();
             const timestamp = `${now.toLocaleDateString()} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
-            doc.text(`Generated on: ${timestamp} (Filter: ${filterYear})`, 14, 30);
+            doc.text(`Generated on: ${timestamp} (Year: ${filterYear}, Status: ${filterStatus})`, 14, 30);
 
             const tableColumn = ["University / Program", "Status", "Milestone Dates", "Notes"];
             const tableRows = [];
@@ -186,9 +187,11 @@ function PhDBoardContent() {
 
     const availableYears = ['All', ...new Set(apps.map(app => new Date(app.deadline).getFullYear().toString()))].sort((a, b) => b - a);
 
-    const filteredApps = filterYear === 'All'
-        ? apps
-        : apps.filter(app => new Date(app.deadline).getFullYear().toString() === filterYear);
+    const filteredApps = apps.filter(app => {
+        const matchesYear = filterYear === 'All' || new Date(app.deadline).getFullYear().toString() === filterYear;
+        const matchesStatus = filterStatus === 'All' || app.status === filterStatus;
+        return matchesYear && matchesStatus;
+    });
 
     const renderNotesWithLinks = (text) => {
         if (!text) return '—';
@@ -275,21 +278,53 @@ function PhDBoardContent() {
                 </div>
             </div>
 
-            {/* Year Filters & Actions */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3">
-                <div className="flex flex-wrap items-center gap-3 overflow-x-auto pb-1 custom-scrollbar">
-                    {availableYears.map(year => (
-                        <button
-                            key={year}
-                            onClick={() => setFilterYear(year)}
-                            className={`px-6 py-2 rounded-xl font-black text-sm tracking-widest transition-all border ${filterYear === year
-                                ? 'bg-white text-purple-900 border-white shadow-lg shadow-white/20'
-                                : 'bg-white/5 text-white/40 border-white/10 hover:bg-white/10 hover:text-white/60'
-                                }`}
-                        >
-                            {year}
-                        </button>
-                    ))}
+            {/* Filters & Actions */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-3">
+                <div className="flex flex-wrap items-center gap-4">
+                    {/* Year Filters */}
+                    <div className="flex flex-wrap items-center gap-2 pr-4 border-r border-white/10">
+                        {availableYears.map(year => (
+                            <button
+                                key={year}
+                                onClick={() => setFilterYear(year)}
+                                className={`px-5 py-1.5 rounded-xl font-black text-xs tracking-widest transition-all border ${filterYear === year
+                                    ? 'bg-white text-purple-900 border-white shadow-lg shadow-white/20'
+                                    : 'bg-white/5 text-white/40 border-white/10 hover:bg-white/10 hover:text-white/60'
+                                    }`}
+                            >
+                                {year}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Status Filters */}
+                    <div className="flex flex-wrap items-center gap-2">
+                        {['All', 'In preparation', 'Submitted', 'Interview', 'Accepted', 'Rejected'].map(status => (
+                            <button
+                                key={status}
+                                onClick={() => setFilterStatus(status)}
+                                className={`px-4 py-1.5 rounded-xl font-black text-[10px] tracking-widest transition-all border flex items-center gap-2 ${filterStatus === status
+                                    ? (status === 'Accepted' ? 'bg-green-500 text-white border-green-500 shadow-lg shadow-green-500/20' :
+                                        status === 'Rejected' ? 'bg-red-500 text-white border-red-500 shadow-lg shadow-red-500/20' :
+                                            status === 'Submitted' ? 'bg-blue-500 text-white border-blue-500 shadow-lg shadow-blue-500/20' :
+                                                status === 'Interview' ? 'bg-purple-500 text-white border-purple-500 shadow-lg shadow-purple-500/20' :
+                                                    status === 'In preparation' ? 'bg-yellow-500 text-white border-yellow-500 shadow-lg shadow-yellow-500/20' :
+                                                        'bg-white text-purple-900 border-white shadow-lg shadow-white/20')
+                                    : 'bg-white/5 text-white/40 border-white/10 hover:bg-white/10 hover:text-white/60'
+                                    }`}
+                            >
+                                {status !== 'All' && (
+                                    <span className={`${status === 'Accepted' ? 'text-green-400' :
+                                        status === 'Rejected' ? 'text-red-400' :
+                                            status === 'Submitted' ? 'text-blue-400' :
+                                                status === 'Interview' ? 'text-purple-400' :
+                                                    'text-yellow-400'
+                                        } ${filterStatus === status ? 'text-white' : ''}`}>●</span>
+                                )}
+                                {status.toUpperCase()}
+                            </button>
+                        ))}
+                    </div>
                 </div>
                 <div className="flex items-center gap-4">
                     <button onClick={exportToPDF} className="px-6 py-2 bg-white/5 backdrop-blur-md border border-white/10 hover:border-white/30 rounded-2xl text-white/70 hover:text-white font-bold transition-all flex items-center gap-2">
