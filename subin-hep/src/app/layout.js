@@ -7,16 +7,16 @@ import { Suspense } from "react";
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
-  title: "Subin HEP - Study Lab",
+  title: "Study Lab",
   description: "High Energy Physics Researcher & Web Developer",
   openGraph: {
-    title: "Subin HEP - Study Lab",
+    title: "Study Lab",
     description: "High Energy Physics Researcher & Web Developer",
     images: ["/assets/header_profile.jpeg"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Subin HEP - Study Lab",
+    title: "Study Lab",
     description: "High Energy Physics Researcher & Web Developer",
     images: ["/assets/header_profile.jpeg"],
   },
