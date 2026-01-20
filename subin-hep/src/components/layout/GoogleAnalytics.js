@@ -14,11 +14,18 @@ export default function GoogleAnalytics({ GA_MEASUREMENT_ID }) {
             return;
         }
 
-        const url = pathname + searchParams.toString();
+        const search = searchParams.toString();
+        const url = pathname + (search ? `?${search}` : '');
 
-        if (window.gtag) {
+        if (typeof window !== 'undefined' && window.gtag) {
             window.gtag('config', GA_MEASUREMENT_ID, {
                 page_path: url,
+            });
+            // SPA 페이자 뷰 추적을 위해 명시적으로 이벤트를 전송하기도 합니다.
+            window.gtag('event', 'page_view', {
+                page_path: url,
+                page_location: window.location.href,
+                page_title: document.title,
             });
         }
     }, [pathname, searchParams, GA_MEASUREMENT_ID]);
