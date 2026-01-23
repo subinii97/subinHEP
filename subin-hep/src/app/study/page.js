@@ -174,7 +174,6 @@ export default function StudyPage() {
   }, [desktopViewPreference]);
 
   // 사용자가 데스크탑에서 수동으로 모드를 바꿨을 때 기억
-  // 사용자가 수동으로 모드를 바꿨을 때 기억 (모바일에서도 변경 시 이를 선호도로 저장)
   const handleViewModeChange = (mode) => {
     setDesktopViewPreference(mode);
     setViewMode(mode);
@@ -182,9 +181,6 @@ export default function StudyPage() {
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  // 모바일/카드: 5개
-  // 그리드: Large(4열) -> 8개, Medium(3열) -> 6개
-  // 리스트: 10개
   const itemsPerPage = isMobile ? 5 : (viewMode === "grid" ? (isLargeScreen ? 8 : 6) : viewMode === "card" ? 5 : 10);
 
   useEffect(() => {
@@ -230,7 +226,6 @@ export default function StudyPage() {
   );
 
   useEffect(() => {
-    // API Route를 통해 마크다운 파일 목록을 가져옴
     fetch('/api/study')
       .then(res => res.json())
       .then(data => {
@@ -251,10 +246,8 @@ export default function StudyPage() {
           alt="Study Header"
           className="w-full h-full object-cover brightness-[0.85] [mask-image:linear-gradient(to_bottom,black_90%,transparent_100%)]"
         />
-        {/* Softened Gradient Overlay for depth and text readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/10 to-transparent"></div>
 
-        {/* Title Container - Constrained to match profile page width */}
         <div className="absolute inset-0 flex items-end pb-16 md:pb-24">
           <div className="max-w-7xl mx-auto px-4 w-full">
             <h1 className="text-3xl md:text-5xl font-black text-white tracking-tighter [text-shadow:0_4px_12px_rgba(0,0,0,1),0_0_30px_rgba(0,0,0,0.8)]">
@@ -264,10 +257,8 @@ export default function StudyPage() {
         </div>
       </section>
 
-      {/* Hero Action Bar - Controls */}
       <div className="max-w-7xl mx-auto px-4 pt-8 -mb-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          {/* 카테고리 탭 */}
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide flex-1">
             {categories.map(category => (
               <button
@@ -283,7 +274,6 @@ export default function StudyPage() {
             ))}
           </div>
 
-          {/* 뷰 모드 스위처 */}
           <div className="flex bg-white/5 backdrop-blur-md h-[42px] items-center p-1 rounded-xl border border-white/10 shadow-xl self-end md:self-auto">
             {[
               { id: 'grid', icon: <GridIcon /> },
@@ -303,10 +293,7 @@ export default function StudyPage() {
         </div>
       </div>
 
-      {/* Main Content Areas */}
       <div className="max-w-7xl mx-auto px-4 py-12">
-
-        {/* 게시글 영역 */}
         {
           isLoading ? (
             <div className="p-20 text-center text-white/30 font-bold animate-pulse">Loading Study Notes...</div>

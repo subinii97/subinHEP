@@ -1,47 +1,22 @@
 ---
-title: German Introduction
-date: 2026-01-23
-category: German
+title: "German Learning: Introduction"
+category: "German"
+created_at: "2024-01-24"
 ---
 
-## 1. Basic Expressions
+# Introduction to German
 
-| German | English |
-| :--- | :--- |
-| Hallo | Hello |
-| Guten Tag | Good day |
-| Guten Morgen | Good morning |
-| Guten Abend | Good evening |
-| Gute Nacht | Good night |
-| Auf Wiedersehen | Goodbye |
-| Tschüss | Bye |
-| Bis bald | See you soon |
-| Bis später | See you later |
-| Bis morgen | See you tomorrow |
-| Danke | Thank you |
-| Bitte | Please |
-| Entschuldigung | Excuse me |
-| Es tut mir leid. | I am sorry. |
-| Kein Problem. | No problem. |
-| Ja | Yes |
-| Nein | No |
+German is a fascinating language with a rich history and logical structure. In this series of notes, I will document my journey and key takeaways from learning German.
 
-## 2. Personal Information
+## Why German?
+- **Academic Relevance**: Many scientific and philosophical works are originally in German.
+- **Career Opportunities**: Germany is a leader in engineering and research.
+- **Cultural Richness**: Literature, music, and art.
 
-| German | English |
-| :--- | :--- |
-| Wie heißen Sie? | What is your name? |
-| Ich heiße Subin. | My name is Subin. |
-| Wie geht es Ihnen? | How are you? |
-| Mir geht es gut. | I am fine. |
-| Mir geht es schlecht. | I am not fine. |
-| Ich verstehe nicht. | I don't understand. |
-| Ich spreche kein Deutsch. | I don't speak German. |
-| Ich spreche ein bisschen Deutsch. | I speak a little German. |
-| Ich spreche Deutsch, Englisch und Koreanisch. | I speak German, English and Korean. |
-| Ich lerne Deutsch. | I learn German. |
-| Ich komme aus Südkorea. | I am from South Korea. |
-| Ich wohne in Seoul. | I live in Seoul. |
-| Ich bin Student. | I am a student. (male) |
-| Ich bin Studentin. | I am a student. (female) |
-| Ich studiere experimentelle Hochenergiephysik. | I study experimental particle physics. |
+## Basic Structure
+German is known for:
+1.  **Cases**: Nominativ, Akkusativ, Dativ, Genitiv.
+2.  **Genders**: Der (Masculine), Die (Feminine), Das (Neuter).
+3.  **Sentence Structure**: Verb-second (V2) position in main clauses.
+
+Stay tuned for more detailed notes!
