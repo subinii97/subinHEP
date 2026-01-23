@@ -112,8 +112,6 @@ export default function StudyPostPage({ params: paramsPromise }) {
           prose-th:text-white prose-td:text-white
           prose-th:px-3 prose-td:px-3
           prose-th:py-1 prose-td:py-1
-          [&_th]:!text-center
-          [&_td:first-child]:!text-center
           prose-th:align-middle prose-td:align-middle
           prose-table:border-collapse
           prose-thead:border-white/50
