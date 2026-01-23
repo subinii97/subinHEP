@@ -18,11 +18,6 @@ category: German
 | Bis bald | See you soon |
 | Bis später | See you later |
 | Bis morgen | See you tomorrow |
-
-## 2. Polite Expressions
-
-| German | English |
-| :--- | :--- |
 | Danke | Thank you |
 | Bitte | Please |
 | Entschuldigung | Excuse me |
@@ -31,7 +26,7 @@ category: German
 | Ja | Yes |
 | Nein | No |
 
-## 3. Personal Information
+## 2. Personal Information
 
 | German | English |
 | :--- | :--- |
