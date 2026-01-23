@@ -127,7 +127,7 @@ export default function StudyPostPage({ params: paramsPromise }) {
           prose-pre:bg-black/40 prose-pre:border prose-pre:border-white/10 prose-pre:rounded-2xl
           prose-blockquote:border-l-4 prose-blockquote:border-[#718eac] prose-blockquote:bg-white/5 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:rounded-r-xl prose-blockquote:italic prose-blockquote:text-white
           prose-img:rounded-3xl prose-img:border prose-img:border-white/10
-          prose-a:text-[#718eac] prose-a:no-underline hover:prose-a:underline
+          prose-a:text-blue-300 prose-a:underline prose-a:underline-offset-4 prose-a:decoration-blue-400/30 hover:prose-a:text-blue-300 transition-colors
         ">
                             <ReactMarkdown
                                 remarkPlugins={[remarkGfm, remarkMath]}
