@@ -50,7 +50,10 @@ function stripMarkdown(text) {
 function GridItem({ post }) {
   const plainText = stripMarkdown(post.content);
   const isPaper = post.category === "Paper Reading";
-  const categoryColor = isPaper ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" : "bg-blue-500/20 text-blue-300 border-blue-500/30";
+  const isGerman = post.category === "German";
+  const categoryColor = isPaper ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" :
+    isGerman ? "bg-amber-500/20 text-amber-300 border-amber-500/30" :
+      "bg-blue-500/20 text-blue-300 border-blue-500/30";
 
   return (
     <Link
@@ -81,7 +84,10 @@ function GridItem({ post }) {
 function CardItem({ post }) {
   const plainText = stripMarkdown(post.content);
   const isPaper = post.category === "Paper Reading";
-  const categoryColor = isPaper ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" : "bg-blue-500/20 text-blue-300 border-blue-500/30";
+  const isGerman = post.category === "German";
+  const categoryColor = isPaper ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" :
+    isGerman ? "bg-amber-500/20 text-amber-300 border-amber-500/30" :
+      "bg-blue-500/20 text-blue-300 border-blue-500/30";
 
   return (
     <Link
@@ -110,7 +116,9 @@ function CardItem({ post }) {
 
 // 3. List View Item (심플 리스트)
 function ListItem({ post }) {
-  const categoryColor = post.category === "Paper Reading" ? "text-emerald-400" : "text-blue-400";
+  const categoryColor = post.category === "Paper Reading" ? "text-emerald-400" :
+    post.category === "German" ? "text-amber-400" :
+      "text-blue-400";
   return (
     <Link
       href={`/study/${post.slug}`}
@@ -142,7 +150,7 @@ export default function StudyPage() {
   const [isLargeScreen, setIsLargeScreen] = useState(false); // 1024px 이상 여부
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  const categories = ["All", "PP Study", "Paper Reading"];
+  const categories = ["All", "PP Study", "Paper Reading", "German"];
 
   useEffect(() => {
     // 초기 모바일/화면 크기 확인 및 리스너 등록
