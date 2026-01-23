@@ -130,6 +130,11 @@ export default function StudyPostPage({ params: paramsPromise }) {
                             <ReactMarkdown
                                 remarkPlugins={[remarkGfm, remarkMath]}
                                 rehypePlugins={[rehypeSlug, rehypeKatex]}
+                                components={{
+                                    a: ({ node, ...props }) => (
+                                        <a {...props} target="_blank" rel="noopener noreferrer" />
+                                    ),
+                                }}
                             >
                                 {post.content}
                             </ReactMarkdown>
